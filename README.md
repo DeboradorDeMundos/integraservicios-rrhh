@@ -46,7 +46,7 @@ Crea y activa un entorno virtual:
 ```bash
 python -m venv venv
 
-# Windows
+# Windows (si python no se reconoce, usa: py -m venv venv)
 venv\Scripts\activate
 
 # macOS / Linux
