@@ -1,0 +1,20 @@
+[theme]
+base = "light"
+primaryColor = "#0B5CAB"
+backgroundColor = "#F4F7FC"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#1C2333"
+font = "sans serif"
+
+[client]
+showErrorDetails = false
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false
+
+[server]
+# Evita el bucle de recarga: ChromaDB escribe archivos y Streamlit los interpreta como cambio de código.
+folderWatchBlacklist = ["chroma_db", "venv", ".git"]
+fileWatcherType = "poll"
+

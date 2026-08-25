@@ -12,19 +12,11 @@ chroma_db/
 
 # Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-.eggs/
-dist/
-build/
 
 # Streamlit
 .streamlit/secrets.toml
 
 # IDE / SO
-.idea/
-.vscode/
 .DS_Store
 Thumbs.db
 
