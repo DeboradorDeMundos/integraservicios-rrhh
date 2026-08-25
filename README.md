@@ -37,8 +37,8 @@ Flujo resumido:
 ## Instalación
 
 ```bash
-git clone https://github.com/TU_USUARIO/integraservicios-rrhh-rag.git
-cd integraservicios-rrhh-rag
+git clone https://github.com/DeboradorDeMundos/integraservicios-rrhh.git
+cd integraservicios-rrhh
 ```
 
 Crea y activa un entorno virtual:
@@ -112,7 +112,7 @@ El navegador se abrirá con el chat de IntegraBot. La primera consulta indexa lo
 ## Estructura del proyecto
 
 ```
-integraservicios-rrhh-rag/
+integraservicios-rrhh/
 ├── data/                  # PDFs corporativos / legales
 ├── src/
 │   ├── __init__.py
