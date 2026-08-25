@@ -74,7 +74,17 @@ def _build_vectorstore(embeddings):
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500,
             chunk_overlap=50,
-            separators=["\n\n", "\n", "Artículo", "Cláusula", " ", ""],
+            separators=[
+                "\n\n",
+                "\n",
+                "Artículo",
+                "Articulo",
+                "Cláusula",
+                "Clausula",
+                "Ley N",
+                " ",
+                "",
+            ],
         )
         chunks = text_splitter.split_documents(raw_documents)
 

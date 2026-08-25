@@ -8,6 +8,7 @@ efecto gris de elementos 'stale' al responder la segunda consulta.
 import html
 import logging
 import os
+import re
 
 import streamlit as st
 from dotenv import load_dotenv
@@ -231,7 +232,19 @@ st.markdown(
             margin-bottom: 0.5rem;
         }
         .source-card .meta { font-size: 0.8rem; color: #0B5CAB; font-weight: 700; margin-bottom: 0.25rem; }
-        .source-card .body { font-size: 0.85rem; color: #334155; line-height: 1.45; }
+        .source-card.aligned {
+            border-left-color: #2F855A;
+            background: #F3F9F4;
+        }
+        .source-card .tag {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-left: 0.35rem;
+            color: #276749;
+        }
 
         .block-found, .block-derived {
             border-radius: 12px;
@@ -270,19 +283,41 @@ st.markdown(
 )
 
 
-def render_sources(sources):
-    """Trazabilidad RAG: PDF de origen, página y fragmento."""
+def cited_pdfs(answer: str) -> list[str]:
+    """Nombres de PDF citados en la respuesta del modelo."""
+    return [
+        name.strip()
+        for name in re.findall(r"Fuente:\s*([^,\]]+\.pdf)", answer or "", flags=re.I)
+    ]
+
+
+def render_sources(sources, answer: str = ""):
+    """Trazabilidad RAG: los 4 fragmentos MMR, con la cita principal primero."""
+    cited = cited_pdfs(answer)
+    ranked = sorted(
+        sources,
+        key=lambda src: 0
+        if any(name.lower() == src["name"].lower() for name in cited)
+        else 1,
+    )
     with st.expander("🔍 Ver fuentes documentales consultadas (RAG)", expanded=False):
-        if not sources:
+        st.caption(
+            "El retriever MMR siempre recupera 4 fragmentos (criterio IE3, k=4). "
+            "Se muestran todos por trazabilidad. Primero van los PDF citados en la respuesta."
+        )
+        if not ranked:
             st.caption("No se recuperaron fragmentos para esta consulta.")
             return
-        for idx, source in enumerate(sources, 1):
+        for idx, source in enumerate(ranked, 1):
+            aligned = any(name.lower() == source["name"].lower() for name in cited)
             body = html.escape(source["content"]).replace("\n", "<br>")
             name = html.escape(source["name"])
+            tag = '<span class="tag">Cita de la respuesta</span>' if aligned else ""
+            klass = "source-card aligned" if aligned else "source-card"
             st.markdown(
                 f"""
-                <div class="source-card">
-                    <div class="meta">Fuente {idx} · {name} · página {source["page"]}</div>
+                <div class="{klass}">
+                    <div class="meta">Fuente {idx} · {name} · página {source["page"]}{tag}</div>
                     <div class="body">{body}</div>
                 </div>
                 """,
@@ -406,7 +441,7 @@ def render_message(message, show_retry: bool = False, index: int = 0):
             st.markdown(documented)
 
         if message.get("sources"):
-            render_sources(message["sources"])
+            render_sources(message["sources"], message.get("content", ""))
 
 
 

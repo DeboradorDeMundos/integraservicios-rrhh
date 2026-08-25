@@ -2,7 +2,13 @@
 
 Sistema de **Retrieval-Augmented Generation (RAG)** para **IntegraServicios S.A.** El asistente **IntegraBot** responde consultas de colaboradores sobre el Reglamento Interno (RIOHS), el Contrato Colectivo y extractos del Código del Trabajo / Ley Karin, **citando la fuente** y **sin inventar** montos, plazos ni artículos.
 
-Repositorio: [https://github.com/DeboradorDeMundos/integraservicios-rrhh](https://github.com/DeboradorDeMundos/integraservicios-rrhh)
+| Dato | Valor |
+| --- | --- |
+| **Autor** | Diego Madrid |
+| **GitHub** | [DeboradorDeMundos](https://github.com/DeboradorDeMundos) |
+| **Repositorio** | [integraservicios-rrhh](https://github.com/DeboradorDeMundos/integraservicios-rrhh) |
+| **Asignatura** | INGENIERIA DE SOLUCIONES CON INTELIGENCIA ARTIFICIAL_011V_OLS |
+| **Proyecto** | Evaluación Numero 1 Duoc uc · Copiloto RAG de RRHH y cumplimiento laboral |
 
 ---
 
@@ -190,6 +196,8 @@ La UI no muestra tracebacks. `src/errors.py` traduce fallas de red, cupo, clave 
 
 ---
 
-## Licencia de uso académico
+## Autoría y licencia de uso académico
 
-Proyecto de evaluación. Los PDFs son **simulados** y no sustituyen el texto oficial del Código del Trabajo ni los instrumentos reales de la empresa.
+Proyecto de evaluación desarrollado por **Diego Madrid** ([@DeboradorDeMundos](https://github.com/DeboradorDeMundos)) para la asignatura **INGENIERIA DE SOLUCIONES CON INTELIGENCIA ARTIFICIAL_011V_OLS**.
+
+Los PDFs son **simulados** y no sustituyen el texto oficial del Código del Trabajo ni los instrumentos reales de la empresa.
