@@ -1,24 +1,78 @@
-# Entorno virtual
+# =============================================================================
+# IntegraBot — archivos que NO deben subirse a GitHub
+# =============================================================================
+
+# --- Entorno virtual Python ---
 venv/
 .venv/
 env/
+ENV/
 
-# Secretos y variables de entorno
+# --- Secretos y variables de entorno (NUNCA subir claves API) ---
 .env
-.env.local
+.env.*
+!.env.example
 
-# Base vectorial local
+# --- Base vectorial local (se regenera al ejecutar la app) ---
 chroma_db/
+chroma_db_v2/
 
-# Python
+# --- Datos generados localmente (python generate_data.py) ---
+data/*.pdf
+
+# --- Documentación / guiones locales (Markdown) ---
+*.md
+
+# Excepción: la rúbrica Duoc exige README en el repo para evaluar
+!README.md
+
+# --- Presentaciones, informes y borradores locales ---
+presentacion*.html
+*.pptx
+*.ppt
+*.docx
+*.doc
+*.pdf
+
+# --- Workspace / IDE ---
+*.code-workspace
+.vscode/
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.eggs/
 
-# Streamlit
+# --- Streamlit ---
 .streamlit/secrets.toml
 
-# IDE / SO
+# --- IDE / editores ---
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Cursor (config local del editor) ---
+.cursor/
+
+# --- Sistema operativo ---
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Logs
+# --- Logs y temporales ---
 *.log
+*.tmp
+*.temp
+.cache/

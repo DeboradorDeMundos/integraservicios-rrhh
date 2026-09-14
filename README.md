@@ -32,33 +32,43 @@ La interfaz, el motor RAG y los datos viven en módulos separados.
 
 ```mermaid
 flowchart TD
-    A[Colaborador en Streamlit app.py] --> B[src/prompts.py System Prompt]
-    A --> C[src/rag_engine.py]
-    C --> D[PyPDFDirectoryLoader ./data]
-    D --> E[RecursiveCharacterTextSplitter 500 / 50]
-    E --> F[Google Embeddings + ChromaDB ./chroma_db]
-    F --> G[Retriever MMR k=4]
-    G --> H[Gemini 2.5 Flash]
-    H --> A
-    A --> I[Expander: fragmentos PDF + página]
+    A[Colaborador en Streamlit app.py] --> B[src/conversation.py historial acotado]
+    A --> C[src/rag_engine.py RAGPipeline]
+    C --> D[src/ingestion.py corpus interno + externo]
+    D --> E[PyPDF ./data + metadata source_type]
+    E --> F[RecursiveCharacterTextSplitter 500 / 50]
+    F --> G[Google Embeddings + ChromaDB ./chroma_db_v2]
+    G --> H[Retriever MMR k=4]
+    H --> I[src/prompts.py System Prompt]
+    I --> J[Gemini 2.5 Flash]
+    J --> K[src/guardrails.py validación]
+    K --> A
+    A --> L[Expander: fragmentos + corpus interno/externo]
 ```
 
 Flujo:
 
 1. `generate_data.py` crea PDFs internos (RIOHS, Contrato Colectivo) y externos (Código del Trabajo / Ley Karin).
-2. `src/rag_engine.py` fragmenta, vectoriza e indexa **una vez** en ChromaDB local.
-3. Cada pregunta recupera 4 fragmentos (MMR) y Gemini responde **solo** con ese contexto.
-4. `app.py` muestra la respuesta, las citas y el expander de trazabilidad.
+2. `src/ingestion.py` fragmenta, etiqueta `source_type` (interno/externo) e indexa en ChromaDB local.
+3. Cada pregunta recupera 4 fragmentos (MMR), inyecta historial reciente y Gemini responde **solo** con ese contexto.
+4. `src/guardrails.py` valida citas o fuerza derivación institucional.
+5. `app.py` muestra la respuesta, las citas y el expander de trazabilidad por tipo de corpus.
 
 ```
 integraservicios-rrhh/
 ├── data/                         # Corpus dual (interno + externo)
+├── scripts/
+│   └── smoke_test.py             # Validación IE1–IE4 (offline y --live)
 ├── src/
 │   ├── __init__.py
-│   ├── prompts.py                # IE2: rol, inyección dual, anti-alucinación
-│   ├── rag_engine.py             # IE3: carga, chunking, Chroma, cadena LCEL
+│   ├── config.py                 # IE1: caso org. + parámetros RAG
+│   ├── ingestion.py              # IE3: carga, etiquetado, ChromaDB
+│   ├── conversation.py           # IE4: historial acotado
+│   ├── prompts.py                # IE2: rol, inyección, anti-alucinación
+│   ├── guardrails.py             # IE2: validación post-respuesta
+│   ├── rag_engine.py             # IE3/IE4: orquestador RAGPipeline
 │   └── errors.py                 # Mensajes de error para el usuario
-├── app.py                        # IE5: chat, historial y fuentes
+├── app.py                        # Chat, historial y fuentes
 ├── generate_data.py
 ├── requirements.txt
 ├── .env.example
@@ -73,7 +83,7 @@ integraservicios-rrhh/
 El System Prompt (`src/prompts.py`) usa `PromptTemplate` de LangChain con:
 
 - **Rol:** IntegraBot, Copiloto de RRHH y Cumplimiento Laboral de IntegraServicios S.A.
-- **Inyección dual:** `{context}` (fragmentos ChromaDB) + `{question}` (consulta).
+- **Inyección triple:** `{context}` + `{question}` + `{chat_history}` (últimas 3 interacciones).
 - **Anti-alucinación:** si el dato no está explícito en el contexto, responde **exactamente**:
 
 > No dispongo de la información oficial en los manuales de la empresa ni en el Código del Trabajo para responder con certeza. He derivado tu consulta al equipo de Gestión de Personas.
@@ -86,10 +96,11 @@ El System Prompt (`src/prompts.py`) usa `PromptTemplate` de LangChain con:
 
 | Capa | Implementación |
 | --- | --- |
-| Carga | `PyPDFDirectoryLoader("./data")` |
+| Carga | `src/ingestion.py` → `PyPDFDirectoryLoader("./data")` |
+| Etiquetado | Metadata `source_type`: `interno` / `externo` por archivo |
 | Chunking | `RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)` con separadores `Artículo` / `Cláusula` |
 | Embeddings | `GoogleGenerativeAIEmbeddings(model="gemini-embedding-001")` |
-| Vector store | ChromaDB persistente en `./chroma_db` |
+| Vector store | ChromaDB persistente en `./chroma_db_v2` |
 | Retriever | MMR, `k=4`, `lambda_mult=0.75` |
 | LLM | `ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.1)` |
 
@@ -156,7 +167,7 @@ Contenido de `.env`:
 GOOGLE_API_KEY=tu_api_key_de_google_ai_studio
 ```
 
-El archivo `.env` **no se sube a GitHub** (está en `.gitignore`, junto con `venv/` y `chroma_db/`).
+El archivo `.env` **no se sube a GitHub** (está en `.gitignore`, junto con `venv/` y `chroma_db_v2/`).
 
 ---
 
@@ -167,11 +178,18 @@ python generate_data.py
 streamlit run app.py
 ```
 
-La primera indexación puede tardar unos segundos. Las siguientes reutilizan `./chroma_db`. La UI queda en [http://localhost:8501](http://localhost:8501).
+La primera indexación puede tardar unos segundos. Las siguientes reutilizan `./chroma_db_v2`. La UI queda en [http://localhost:8501](http://localhost:8501).
+
+Validación automatizada del código (rúbrica IE1–IE4):
+
+```bash
+python scripts/smoke_test.py
+python scripts/smoke_test.py --live
+```
 
 ---
 
-## 9. Trazabilidad en la interfaz (IE5)
+## 9. Trazabilidad en la interfaz
 
 Bajo cada respuesta hay un expander:
 

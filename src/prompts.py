@@ -2,11 +2,12 @@
 """
 Ingeniería de prompts de IntegraBot (criterio IE2).
 
-Define el System Prompt con:
-- asignación de rol
-- inyección dual de contexto ({context} + {question})
-- regla estricta anti-alucinación
-- citación obligatoria [Fuente: archivo.pdf, Art./Cláusula]
+Decisiones de diseño documentadas en código:
+- Rol acotado: copiloto RRHH, no abogado ni meteorólogo.
+- Inyección triple: {context} + {question} + {chat_history} (IE4).
+- Anti-alucinación: frase institucional exacta si no hay evidencia.
+- Citación obligatoria [Fuente: archivo.pdf, Art./Cláusula] por dato.
+- temperature=0.1 en el LLM (config) para respuestas deterministas.
 """
 from langchain_core.prompts import PromptTemplate
 
@@ -16,7 +17,6 @@ DERIVATION_PHRASE = (
     "He derivado tu consulta al equipo de Gestión de Personas."
 )
 
-# Plantilla de inyección dual: documentos recuperados + pregunta del trabajador.
 SYSTEM_PROMPT_TEXT = """
 Eres "IntegraBot", el Copiloto de Recursos Humanos y Cumplimiento Laboral de IntegraServicios S.A.
 
@@ -37,17 +37,22 @@ REGLAS DE OBLIGADO CUMPLIMIENTO:
    (solo lo que sí está en el contexto, con su cita)
    DERIVADO A GESTIÓN DE PERSONAS:
    (la frase exacta del punto 2, indicando qué parte no está en los manuales)
+7. Usa el HISTORIAL solo para entender referencias ("¿y cuánto es el aguinaldo?" tras hablar de beneficios). No repitas respuestas completas del historial si el contexto documental cambió.
 
-CONTEXTO RECUPERADO DE LA BASE DE DATOS:
+HISTORIAL RECIENTE DE LA CONVERSACIÓN:
+----------------------------------------
+{chat_history}
+----------------------------------------
+
+CONTEXTO RECUPERADO DE LA BASE DE DATOS (corpus interno + externo):
 ----------------------------------------
 {context}
 ----------------------------------------
 
-PREGUNTA DEL TRABAJADOR:
+PREGUNTA ACTUAL DEL TRABAJADOR:
 {question}
 
 RESPUESTA PRECISA CON CITAS:
 """
 
-# PromptTemplate de LangChain: inyecta {context} y {question} en la cadena LCEL.
 SYSTEM_PROMPT = PromptTemplate.from_template(SYSTEM_PROMPT_TEXT)

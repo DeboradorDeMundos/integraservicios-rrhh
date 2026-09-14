@@ -2,113 +2,92 @@
 """
 Pipeline RAG dual de IntegraBot (criterios IE3 e IE4).
 
-Responsabilidades:
-- Cargar PDFs internos (RIOHS, Contrato Colectivo) y externos
-  (Código del Trabajo / Ley Karin) desde ./data
-- Fragmentar (~500 caracteres, overlap 50)
-- Indexar vectores en ChromaDB local
-- Exponer la cadena LCEL y el retriever MMR para la UI
+Módulos desacoplados:
+- config.py      → caso organizacional y parámetros
+- ingestion.py   → carga, etiquetado interno/externo, ChromaDB
+- prompts.py     → System Prompt (IE2)
+- guardrails.py  → validación post-respuesta (IE2)
+- conversation.py→ historial acotado (IE4)
 """
+from __future__ import annotations
+
 import os
+from dataclasses import dataclass
 
 from dotenv import load_dotenv
-from langchain_community.document_loaders import PyPDFDirectoryLoader
-from langchain_community.vectorstores import Chroma
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from src.config import (
+    CORPUS_LABELS,
+    EMBEDDING_MODEL,
+    LLM_MODEL,
+    LLM_TEMPERATURE,
+    RETRIEVER_K,
+    RETRIEVER_LAMBDA,
+    SourceType,
+)
+from src.conversation import format_chat_history
+from src.guardrails import apply_response_guardrails
+from src.ingestion import build_vectorstore
 from src.prompts import SYSTEM_PROMPT
 
 load_dotenv()
 
-PERSIST_DIRECTORY = "./chroma_db"
-DATA_DIRECTORY = "./data"
 
-# Modelo vigente de embeddings en Google AI Studio.
-# La referencia "models/embedding-001" fue retirada (error 404); se usa el sucesor oficial.
-EMBEDDING_MODEL = "gemini-embedding-001"
-LLM_MODEL = "gemini-2.5-flash"
-
-
-def format_docs(docs):
+def format_docs(docs) -> str:
     """
-    Concatena fragmentos recuperados e inyecta trazabilidad
-    (nombre de archivo y página) para el LLM y la UI.
+    Concatena fragmentos recuperados con trazabilidad IE3:
+    nombre, página y tipo de corpus (interno / externo).
     """
     formatted = []
     for doc in docs:
         source_name = os.path.basename(doc.metadata.get("source", "Documento"))
         page = doc.metadata.get("page", 0) + 1
+        source_type = doc.metadata.get("source_type", SourceType.INTERNAL.value)
+        label = CORPUS_LABELS.get(
+            SourceType(source_type),
+            "Documento corporativo",
+        )
         formatted.append(
-            f"--- Fuente: {source_name} (Pág. {page}) ---\n{doc.page_content}"
+            f"--- Fuente: {source_name} (Pág. {page}) [{source_type}] ---\n"
+            f"Tipo: {label}\n"
+            f"{doc.page_content}"
         )
     return "\n\n".join(formatted)
 
 
-def _build_vectorstore(embeddings):
-    """Crea o reutiliza el índice vectorial local de ChromaDB."""
-    db_exists = os.path.exists(PERSIST_DIRECTORY) and os.listdir(PERSIST_DIRECTORY)
+@dataclass
+class RAGPipeline:
+    """Orquestador IE4: recuperación → generación → guardrails."""
 
-    if not db_exists:
-        if not os.path.isdir(DATA_DIRECTORY) or not any(
-            name.lower().endswith(".pdf") for name in os.listdir(DATA_DIRECTORY)
-        ):
-            raise FileNotFoundError(
-                "No hay documentos en ./data. Ejecuta primero: python generate_data.py"
-            )
+    retriever: object
+    generation_chain: object
 
-        print("Indexando documentos PDF en ChromaDB con Google Embeddings...")
-        loader = PyPDFDirectoryLoader(DATA_DIRECTORY)
-        raw_documents = loader.load()
+    def query(self, question: str, chat_history: str = "") -> tuple[str, list]:
+        """
+        Ejecuta una consulta completa.
 
-        if not raw_documents:
-            raise ValueError(
-                "No se pudo extraer texto de los PDF en ./data. "
-                "Verifica RIOHS_IntegraServicios_2026.pdf, "
-                "Contrato_Colectivo_2026.pdf y Codigo_del_Trabajo_Chile.pdf."
-            )
-
-        # Chunking ~500 con overlap 50 y separadores jurídicos.
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500,
-            chunk_overlap=50,
-            separators=[
-                "\n\n",
-                "\n",
-                "Artículo",
-                "Articulo",
-                "Cláusula",
-                "Clausula",
-                "Ley N",
-                " ",
-                "",
-            ],
+        Returns:
+            tuple[str, list]: respuesta final y documentos recuperados (MMR k=4).
+        """
+        retrieved_docs = self.retriever.invoke(question)
+        context = format_docs(retrieved_docs)
+        history = chat_history or "Sin conversación previa."
+        raw_answer = self.generation_chain.invoke(
+            {
+                "context": context,
+                "question": question,
+                "chat_history": history,
+            }
         )
-        chunks = text_splitter.split_documents(raw_documents)
-
-        vectorstore = Chroma.from_documents(
-            documents=chunks,
-            embedding=embeddings,
-            persist_directory=PERSIST_DIRECTORY,
-        )
-        print(f"Se indexaron {len(chunks)} fragmentos exitosamente.")
-        return vectorstore
-
-    print("Cargando base de datos ChromaDB existente...")
-    return Chroma(
-        persist_directory=PERSIST_DIRECTORY,
-        embedding_function=embeddings,
-    )
+        answer = apply_response_guardrails(raw_answer)
+        return answer, retrieved_docs
 
 
-def initialize_rag_system():
+def initialize_rag_system() -> RAGPipeline:
     """
-    Inicializa ChromaDB y la cadena RAG con Google Gemini 2.5 Flash.
-
-    Returns:
-        tuple: (rag_chain, retriever) para generar respuestas y mostrar fuentes.
+    Inicializa ChromaDB y la cadena de generación con Google Gemini 2.5 Flash.
     """
     if not os.getenv("GOOGLE_API_KEY"):
         raise EnvironmentError(
@@ -116,26 +95,33 @@ def initialize_rag_system():
         )
 
     embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL)
-    vectorstore = _build_vectorstore(embeddings)
+    vectorstore = build_vectorstore(embeddings)
 
     retriever = vectorstore.as_retriever(
         search_type="mmr",
-        search_kwargs={"k": 4, "lambda_mult": 0.75},
+        search_kwargs={"k": RETRIEVER_K, "lambda_mult": RETRIEVER_LAMBDA},
     )
 
-    llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=0.1)
+    llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=LLM_TEMPERATURE)
+    generation_chain = SYSTEM_PROMPT | llm | StrOutputParser()
 
-    # Cadena LCEL: retriever -> prompt (contexto + pregunta) -> Gemini -> texto.
-    rag_chain = (
-        {"context": retriever | format_docs, "question": RunnablePassthrough()}
-        | SYSTEM_PROMPT
-        | llm
-        | StrOutputParser()
-    )
-
-    return rag_chain, retriever
+    return RAGPipeline(retriever=retriever, generation_chain=generation_chain)
 
 
 def get_rag_chain():
-    """Punto de entrada usado por la interfaz Streamlit."""
+    """
+    Punto de entrada usado por la interfaz Streamlit.
+
+    Returns:
+        RAGPipeline con método .query(question, chat_history).
+    """
     return initialize_rag_system()
+
+
+__all__ = [
+    "RAGPipeline",
+    "format_chat_history",
+    "format_docs",
+    "get_rag_chain",
+    "initialize_rag_system",
+]

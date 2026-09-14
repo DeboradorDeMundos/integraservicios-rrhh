@@ -13,8 +13,9 @@ import re
 import streamlit as st
 from dotenv import load_dotenv
 
+from src.config import CORPUS_LABELS, SourceType
+from src.conversation import format_chat_history
 from src.errors import classify_exception
-from src.prompts import DERIVATION_PHRASE
 from src.rag_engine import get_rag_chain
 
 load_dotenv()
@@ -245,6 +246,22 @@ st.markdown(
             margin-left: 0.35rem;
             color: #276749;
         }
+        .source-card .corpus-tag {
+            display: inline-block;
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            margin-left: 0.35rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 999px;
+            background: #E8F1FB;
+            color: #0B5CAB;
+        }
+        .source-card .corpus-tag.externo {
+            background: #F3ECFF;
+            color: #553C9A;
+        }
 
         .block-found, .block-derived {
             border-radius: 12px;
@@ -313,12 +330,20 @@ def render_sources(sources, answer: str = ""):
             body = html.escape(source["content"]).replace("\n", "<br>")
             name = html.escape(source["name"])
             tag = '<span class="tag">Cita de la respuesta</span>' if aligned else ""
+            corpus_type = source.get("source_type", SourceType.INTERNAL.value)
+            corpus_label = html.escape(
+                CORPUS_LABELS.get(SourceType(corpus_type), "Documento corporativo")
+            )
+            corpus_class = "corpus-tag externo" if corpus_type == SourceType.EXTERNAL.value else "corpus-tag"
             klass = "source-card aligned" if aligned else "source-card"
             st.markdown(
                 f"""
                 <div class="{klass}">
-                    <div class="meta">Fuente {idx} · {name} · página {source["page"]}{tag}</div>
-                    <div class="body">{body}</div>
+                    <div class="meta">
+                        Fuente {idx} · {name} · página {source["page"]}
+                        <span class="{corpus_class}">{corpus_type}</span>{tag}
+                    </div>
+                    <div class="body"><em>{corpus_label}</em><br>{body}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -463,6 +488,7 @@ def collect_sources(docs):
             "name": os.path.basename(doc.metadata.get("source", "PDF")),
             "page": doc.metadata.get("page", 0) + 1,
             "content": doc.page_content,
+            "source_type": doc.metadata.get("source_type", SourceType.INTERNAL.value),
         }
         for doc in docs
     ]
@@ -470,7 +496,7 @@ def collect_sources(docs):
 
 @st.cache_resource
 def load_rag():
-    """Carga una sola vez la cadena RAG y el retriever."""
+    """Carga una sola vez el pipeline RAG (recuperación + generación + guardrails)."""
     return get_rag_chain()
 
 
@@ -486,10 +512,10 @@ with st.sidebar:
         "3. La respuesta incluye la fuente exacta."
     )
     st.divider()
-    st.markdown("**Fuentes indexadas**")
-    st.markdown("- RIOHS_IntegraServicios_2026.pdf")
-    st.markdown("- Contrato_Colectivo_2026.pdf")
-    st.markdown("- Codigo_del_Trabajo_Chile.pdf")
+    st.markdown("**Corpus indexado (IE3)**")
+    st.markdown("- **Interno:** RIOHS_IntegraServicios_2026.pdf")
+    st.markdown("- **Interno:** Contrato_Colectivo_2026.pdf")
+    st.markdown("- **Externo:** Codigo_del_Trabajo_Chile.pdf")
     st.divider()
     if st.button("Nueva conversación", use_container_width=True):
         st.session_state.messages = []
@@ -516,7 +542,7 @@ st.markdown(
 )
 
 try:
-    rag_chain, retriever = load_rag()
+    pipeline = load_rag()
 except Exception as exc:
     info = classify_exception(exc)
     st.markdown(
@@ -592,9 +618,9 @@ if busy:
         if msg["role"] == "user"
     )
     try:
-        retrieved_docs = retriever.invoke(query)
+        history = format_chat_history(st.session_state.messages[:-2])
+        response, retrieved_docs = pipeline.query(query, chat_history=history)
         sources = collect_sources(retrieved_docs)
-        response = rag_chain.invoke(query)
         st.session_state.messages[-1] = {
             "role": "assistant",
             "content": response,
