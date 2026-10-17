@@ -20,7 +20,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from src.config import CORPUS, DATA_DIRECTORY, DEMO_QUESTIONS, ORG_CASE, SourceType
+from src.config import CORPUS, DATA_DIRECTORY, DEMO_QUESTIONS, MODEL_PROVIDER, ORG_CASE, SourceType
+from src.models import provider_label
 from src.conversation import format_chat_history
 from src.guardrails import apply_response_guardrails, extract_citations, has_derivation_phrase
 
@@ -96,10 +97,23 @@ def test_guardrails() -> None:
     ok("respuesta con cita se preserva")
 
 
+def _live_provider_ready() -> bool:
+    if MODEL_PROVIDER == "local":
+        return True
+    if MODEL_PROVIDER == "google":
+        return bool(os.getenv("GOOGLE_API_KEY"))
+    if MODEL_PROVIDER == "groq":
+        return bool(os.getenv("GROQ_API_KEY"))
+    return False
+
+
 def test_live_pipeline() -> None:
-    print("\n[IE3–IE4] Consultas en vivo (Gemini + ChromaDB)")
-    if not os.getenv("GOOGLE_API_KEY"):
-        print("  SKIP (sin GOOGLE_API_KEY en .env)")
+    print(f"\n[IE3–IE4] Consultas en vivo ({provider_label()} + ChromaDB)")
+    if not _live_provider_ready():
+        print(
+            f"  SKIP (MODEL_PROVIDER={MODEL_PROVIDER} sin clave; "
+            "usa MODEL_PROVIDER=local en .env para pruebas sin API)"
+        )
         return
 
     from src.rag_engine import get_rag_chain
@@ -139,6 +153,7 @@ def main() -> None:
     args = parser.parse_args()
 
     print("IntegraBot - smoke tests (codigo / rubrica IE1-IE4)")
+    print(f"Proveedor configurado: {provider_label()} (MODEL_PROVIDER={MODEL_PROVIDER})")
     test_org_case()
     test_corpus_files()
     test_ingestion_metadata()

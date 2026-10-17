@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>IntegraBot · Núcleo neuronal · IntegraServicios</title>
+  <title>IntegraBot · IntegraServicios S.A.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,600;0,700;0,800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
   <style>
@@ -15,6 +15,8 @@
       --ice: #E8F4FF;
       --muted: #9BB4CC;
       --blue: #2B7FFF;
+      --green: #5CFFC0;
+      --orange: #FF9F5A;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -25,7 +27,7 @@
       overflow: hidden;
       cursor: none;
     }
-    #fx, #net {
+    #net {
       position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
       transition: filter .55s ease, transform 1.1s cubic-bezier(.16,1,.3,1);
     }
@@ -50,11 +52,11 @@
       box-shadow: 0 0 18px rgba(92,225,255,.6);
     }
     .cursor.big { width: 42px; height: 42px; background: rgba(92,225,255,.08); }
-
     .deck { height: 100%; position: relative; z-index: 2; }
     .slide {
       display: none; height: 100%;
-      padding: 56px 74px 90px;
+      padding: 52px 68px 88px;
+      overflow-y: auto;
     }
     .slide.on {
       display: flex; flex-direction: column; justify-content: center;
@@ -66,114 +68,199 @@
     }
     .kicker {
       color: var(--cyan); letter-spacing: .22em; text-transform: uppercase;
-      font-size: 11px; font-weight: 700; margin-bottom: 12px;
+      font-size: 11px; font-weight: 700; margin-bottom: 10px;
       text-shadow: 0 0 18px rgba(92,225,255,.45);
     }
     h1, h2 { font-family: Syne, sans-serif; }
     h1 {
-      font-size: clamp(44px, 6.4vw, 76px); letter-spacing: -.045em; line-height: .98; margin-bottom: 14px;
+      font-size: clamp(40px, 5.8vw, 72px); letter-spacing: -.045em; line-height: .98; margin-bottom: 12px;
       background: linear-gradient(100deg, #fff 10%, #5CE1FF 35%, #F0C36A 55%, #8B7CFF 75%, #fff 100%);
       background-size: 240% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
       animation: flow 7s linear infinite;
     }
-    h2 { font-size: clamp(28px, 4vw, 46px); letter-spacing: -.03em; margin-bottom: 14px; }
+    h2 { font-size: clamp(26px, 3.6vw, 42px); letter-spacing: -.03em; margin-bottom: 12px; }
     @keyframes flow { to { background-position: 240% center; } }
-    p.lead { font-size: 20px; color: var(--ice); max-width: 880px; line-height: 1.5; }
-    .sub { color: var(--muted); font-size: 16px; margin-top: 10px; }
-    .row { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 24px; }
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+    p.lead { font-size: 18px; color: var(--ice); max-width: 920px; line-height: 1.5; }
+    .sub { color: var(--muted); font-size: 15px; margin-top: 10px; line-height: 1.45; }
+    .row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 18px; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+    .row-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-top: 16px; }
     .card {
       position: relative; overflow: hidden;
       background: linear-gradient(165deg, rgba(255,255,255,.11), rgba(10,20,40,.35));
       border: 1px solid rgba(92,225,255,.18);
-      border-radius: 20px; padding: 18px 18px 16px;
+      border-radius: 18px; padding: 16px 16px 14px;
       backdrop-filter: blur(16px);
       box-shadow: 0 16px 50px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.12);
       animation: rise .75s both;
     }
     .card::after {
       content: ""; position: absolute; inset: -40% auto -40% -30%; width: 40%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
       transform: skewX(-18deg); animation: sweep 5.5s ease-in-out infinite;
     }
     @keyframes sweep { 0%,70% { left: -40%; } 100% { left: 130%; } }
     .slide.on .card:nth-child(1){animation-delay:.05s}
-    .slide.on .card:nth-child(2){animation-delay:.14s}
-    .slide.on .card:nth-child(3){animation-delay:.23s}
-    .card h3 { font-size: 16px; margin-bottom: 7px; }
-    .card p, .card li { color: var(--ice); font-size: 15px; line-height: 1.45; }
+    .slide.on .card:nth-child(2){animation-delay:.12s}
+    .slide.on .card:nth-child(3){animation-delay:.19s}
+    .slide.on .card:nth-child(4){animation-delay:.26s}
+    .card h3 { font-size: 15px; margin-bottom: 6px; }
+    .card p, .card li { color: var(--ice); font-size: 14px; line-height: 1.42; }
     .card ul { padding-left: 16px; }
     .ie {
       display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .08em;
-      padding: 3px 9px; border-radius: 999px; margin-bottom: 8px;
+      padding: 3px 9px; border-radius: 999px; margin-bottom: 8px; margin-right: 6px;
       background: linear-gradient(90deg, #2B7FFF, #8B7CFF); color: #fff;
     }
-    .metric { font-size: 46px; font-weight: 800; font-family: Syne, sans-serif; }
+    .ie.green { background: linear-gradient(90deg, #1a8f5a, #5CFFC0); }
+    .ie.gold { background: linear-gradient(90deg, #b8860b, #F0C36A); color: #122033; }
+    .metric { font-size: 42px; font-weight: 800; font-family: Syne, sans-serif; }
     .metric em { color: var(--gold); font-style: normal; text-shadow: 0 0 24px rgba(240,195,106,.4); }
-    .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 22px; }
+    .flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 16px; }
     .pill {
       background: linear-gradient(135deg, rgba(43,127,255,.9), rgba(139,124,255,.75));
       border: 1px solid rgba(255,255,255,.2);
-      border-radius: 14px; padding: 11px 13px; font-size: 12.5px; font-weight: 700;
+      border-radius: 12px; padding: 9px 11px; font-size: 11.5px; font-weight: 700;
       box-shadow: 0 0 22px rgba(43,127,255,.28); animation: rise .6s both;
     }
-    .arrow { color: var(--gold); font-size: 20px; }
+    .pill.sm { font-size: 10.5px; padding: 7px 9px; }
+    .pill.ext { background: linear-gradient(135deg, rgba(139,124,255,.85), rgba(90,60,180,.8)); }
+    .pill.int { background: linear-gradient(135deg, rgba(43,127,255,.85), rgba(20,80,160,.8)); }
+    .arrow { color: var(--gold); font-size: 18px; }
     .quote {
       border-left: 3px solid var(--cyan);
-      padding: 12px 16px; font-size: 19px; line-height: 1.45; max-width: 980px;
+      padding: 12px 16px; font-size: 16px; line-height: 1.45; max-width: 980px;
       background: linear-gradient(90deg, rgba(92,225,255,.12), transparent);
-      border-radius: 0 16px 16px 0;
+      border-radius: 0 16px 16px 0; color: var(--ice);
     }
-    .mono { font-family: "JetBrains Mono", monospace; font-size: 13px; background: rgba(0,0,0,.35); padding: 2px 6px; border-radius: 6px; color: var(--cyan); }
+    .mono { font-family: "JetBrains Mono", monospace; font-size: 12px; background: rgba(0,0,0,.35); padding: 2px 6px; border-radius: 6px; color: var(--cyan); }
     .logo {
-      width: 64px; height: 64px; border-radius: 50%;
+      width: 60px; height: 60px; border-radius: 50%;
       display: grid; place-items: center; font-family: Syne, sans-serif; font-weight: 800;
       background: radial-gradient(circle at 30% 30%, #8B7CFF, #2B7FFF 55%, #071A30);
       box-shadow: 0 0 0 1px rgba(92,225,255,.5), 0 0 40px rgba(92,225,255,.35);
-      margin-bottom: 16px; animation: core 3.2s ease-in-out infinite;
+      margin-bottom: 14px; animation: core 3.2s ease-in-out infinite;
     }
     @keyframes core {
       0%,100% { box-shadow: 0 0 0 1px rgba(92,225,255,.4), 0 0 28px rgba(92,225,255,.3); }
       50% { box-shadow: 0 0 0 6px rgba(92,225,255,.08), 0 0 48px rgba(240,195,106,.35); }
     }
-    table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 15px; }
-    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid rgba(92,225,255,.12); }
-    th { color: var(--gold); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
-    .ok { color: #5CFFC0; font-weight: 800; text-shadow: 0 0 16px rgba(92,255,192,.35); }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    th, td { text-align: left; padding: 9px 11px; border-bottom: 1px solid rgba(92,225,255,.12); vertical-align: top; }
+    th { color: var(--gold); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+    td { color: var(--ice); }
+    .ok { color: var(--green); font-weight: 800; }
+    .warn { color: var(--orange); font-weight: 700; }
     .chip {
       display: inline-flex; align-items: center; gap: 6px;
       border: 1px solid rgba(92,225,255,.25); background: rgba(8,20,40,.45);
-      border-radius: 999px; padding: 6px 12px; margin: 8px 8px 0 0; font-size: 12px;
+      border-radius: 999px; padding: 5px 11px; margin: 6px 6px 0 0; font-size: 11.5px;
     }
+    .tag-in { color: var(--cyan); border-color: rgba(92,225,255,.4); }
+    .tag-ex { color: var(--violet); border-color: rgba(139,124,255,.4); }
     .bar {
-      position: fixed; left: 0; right: 0; bottom: 0; height: 62px; z-index: 9;
-      display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+      position: fixed; left: 0; right: 0; bottom: 0; height: 58px; z-index: 9;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 22px;
       background: rgba(2,6,14,.72); backdrop-filter: blur(18px);
       border-top: 1px solid rgba(92,225,255,.15);
     }
-    .progress { height: 4px; width: 260px; background: rgba(255,255,255,.1); border-radius: 9px; overflow: hidden; }
+    .progress { height: 4px; width: 240px; background: rgba(255,255,255,.1); border-radius: 9px; overflow: hidden; }
     .progress > i { display:block; height:100%; width:0; background: linear-gradient(90deg, var(--gold), var(--cyan), var(--violet)); transition: width .45s ease; }
     .nav button {
       background: transparent; color: #fff; border: 1px solid rgba(92,225,255,.3);
-      border-radius: 10px; padding: 8px 13px; cursor: none;
+      border-radius: 10px; padding: 7px 12px; cursor: none; font-family: inherit; font-size: 13px;
     }
     .nav button:hover { background: rgba(43,127,255,.35); }
     .brand { font-size: 11px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; font-family: "JetBrains Mono", monospace; }
     .notes {
-      display: none; position: fixed; right: 16px; top: 52px; width: 400px; max-height: 66vh;
+      display: none; position: fixed; right: 16px; top: 48px; width: min(440px, 42vw); max-height: 72vh;
       overflow: auto; z-index: 10; background: #f7fbff; color: #122033;
-      border-radius: 18px; padding: 16px 18px; font-size: 14px; line-height: 1.5;
+      border-radius: 18px; padding: 16px 18px; font-size: 13.5px; line-height: 1.55;
       box-shadow: 0 24px 70px rgba(0,0,0,.45); border: 1px solid #cfe6ff;
     }
     .notes.on { display: block; animation: rise .35s ease; }
-    .notes b { color: #1a5ad9; }
+    .notes b { color: #1a5ad9; display: block; margin-bottom: 8px; font-size: 12px; }
+    .notes .priv { font-size: 10px; color: #999; margin-top: 10px; }
+    .notes .time { color: #667; font-size: 11px; font-family: "JetBrains Mono", monospace; margin-bottom: 6px; }
     .flash {
       position: fixed; inset: 0; z-index: 4; pointer-events: none; opacity: 0;
       background: radial-gradient(circle at var(--gx,50%) var(--gy,50%), rgba(92,225,255,.35), transparent 42%);
     }
     .flash.go { animation: flash .55s ease; }
     @keyframes flash { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
-    .hint { position: fixed; top: 16px; right: 20px; z-index: 8; color: #7aa0c0; font-size: 11px; font-family: "JetBrains Mono", monospace; }
+    .hint {
+      position: fixed; top: 16px; right: 20px; z-index: 8; color: #7aa0c0; font-size: 11px;
+      font-family: "JetBrains Mono", monospace; text-align: right; line-height: 1.5;
+    }
+    .mod-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+    .mod {
+      font-size: 11px; padding: 10px; border-radius: 12px;
+      border: 1px solid rgba(92,225,255,.2); background: rgba(0,0,0,.25);
+    }
+    .mod strong { display: block; color: var(--cyan); font-family: "JetBrains Mono", monospace; font-size: 10px; margin-bottom: 4px; }
+    .demo-num {
+      display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 8px;
+      background: var(--gold); color: #122033; font-weight: 800; font-size: 13px; margin-right: 8px;
+    }
+    @media (max-width: 1100px) {
+      .row, .row-4, .mod-grid { grid-template-columns: 1fr 1fr; }
+      .slide { padding: 48px 28px 80px; }
+    }
+    .notes-fab {
+      position: fixed;
+      right: 14px;
+      bottom: 70px;
+      z-index: 11;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(92,225,255,.28);
+      background: rgba(2,8,18,.5);
+      backdrop-filter: blur(12px);
+      color: rgba(155,180,204,.9);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0,0,0,.3);
+      transition: transform .15s, background .2s, border-color .2s;
+      -webkit-tap-highlight-color: transparent;
+      padding: 0;
+    }
+    .notes-fab svg { pointer-events: none; opacity: .88; }
+    .notes-fab:active { transform: scale(.9); }
+    .notes-fab.on {
+      background: rgba(43,127,255,.4);
+      border-color: rgba(92,225,255,.55);
+      color: #fff;
+    }
+    @media (max-width: 768px), (hover: none) {
+      html, body { cursor: auto; }
+      .cursor { display: none; }
+      .hint { display: none; }
+      .hud { font-size: 9px; left: 10px; top: 10px; max-width: 55%; }
+      .slide { padding: 44px 18px 76px; }
+      .notes {
+        left: 10px;
+        right: 10px;
+        top: auto;
+        bottom: 64px;
+        width: auto;
+        max-height: min(58vh, 420px);
+        font-size: 15px;
+        line-height: 1.6;
+        border-radius: 14px;
+      }
+      .notes-fab {
+        bottom: 66px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+      }
+      .bar { padding: 0 10px; height: 52px; }
+      .brand { display: none; }
+      .progress { width: 100px; }
+      .nav button { padding: 8px 10px; font-size: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -181,17 +268,22 @@
   <div class="vignette"></div>
   <div class="flash" id="flash"></div>
   <div class="cursor" id="cur"></div>
-  <div class="hud">NÚCLEO AGENTE · <span id="view">ESTABLECIMIENTO</span> · SINAPSIS <span id="syn">0</span> · NODOS <span id="nod">0</span> · SLIDE <span id="sl">01</span></div>
-  <div class="hint">← →  N=guion  F=full</div>
+  <div class="hud">INTEGRABOT · <span id="view">INICIO</span> · SLIDE <span id="sl">01</span>/<span id="tot">16</span></div>
+  <div class="hint">← → · <b>F</b> pantalla completa</div>
   <div class="notes" id="notes"></div>
+  <button type="button" class="notes-fab" id="notesFab" aria-label="Notas">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M4 7h14M4 12h10M4 17h12"/>
+    </svg>
+  </button>
   <div class="deck" id="deck"></div>
   <div class="bar">
-    <div class="brand">Diego Madrid · 011V_OLS · IntegraBot</div>
+    <div class="brand">Diego Madrid · IntegraBot · IntegraServicios S.A.</div>
     <div class="progress"><i id="bar"></i></div>
     <div class="nav">
-      <button id="prev">Atrás</button>
-      <span id="num" style="margin:0 12px;color:#9BB4CC;font-family:JetBrains Mono,monospace;font-size:12px"></span>
-      <button id="next">Siguiente</button>
+      <button id="prev">← Atrás</button>
+      <span id="num" style="margin:0 10px;color:#9BB4CC;font-family:JetBrains Mono,monospace;font-size:12px"></span>
+      <button id="next">Siguiente →</button>
     </div>
   </div>
 
@@ -200,183 +292,259 @@
       {
         html: `
           <div class="logo rise">IB</div>
-          <div class="kicker rise">Asistente de cumplimiento laboral · IntegraServicios S.A.</div>
+          <div class="kicker rise">Copiloto RAG · IntegraServicios S.A.</div>
           <h1 class="rise">IntegraBot</h1>
-          <p class="lead rise">Un trabajador pregunta. El sistema busca en los documentos oficiales, responde y cita la fuente. Si no puede respaldar la respuesta, no inventa: deriva a una persona.</p>
-          <div class="rise" style="margin-top:16px">
-            <span class="chip">Diego Madrid</span>
-            <span class="chip">Ingeniería de soluciones con IA · 011V_OLS</span>
-            <span class="chip">Gemini 2.5 Flash</span>
+          <p class="lead rise">Recupera documentos oficiales, responde citando la fuente y, si no hay evidencia, deriva a Gestión de Personas — sin inventar montos, plazos ni artículos.</p>
+          <div class="rise" style="margin-top:14px">
+            <span class="chip">Diego Alejandro Madrid Muñoz</span>
+            <span class="chip">Ingeniería de Soluciones con IA</span>
+            <span class="chip">LangChain · ChromaDB · Gemini 2.5 Flash</span>
           </div>
         `,
-        note: "Hola, buenas tardes. Soy Diego Madrid y les presento IntegraBot, un asistente para IntegraServicios, una empresa de servicios que usamos como caso. Está pensado para Gestión de Personas.<br><br>La idea es bien concreta: alguien pregunta por un beneficio o una norma, el sistema busca en los documentos oficiales y responde citando de dónde salió. Si no tiene cómo respaldarlo, no se inventa la respuesta: la pasa a un humano.<br><br>En un minuto les cuento el problema, cómo está armado y después lo enciendo."
+        time: "0:00 – 0:45",
+        note: "Buenos días. Presento IntegraBot, copiloto RAG para IntegraServicios S.A. No es un chatbot genérico: busca en documentos oficiales, cita la fuente y, si no hay evidencia, escala a Gestión de Personas sin inventar. Hoy cubro problema, arquitectura, normativa, decisiones técnicas y demo en vivo."
       },
       {
         html: `
-          <div class="kicker">El recorrido</div>
-          <h2 class="rise">Qué les voy a mostrar.</h2>
+          <div class="kicker">Mapa de la exposición</div>
+          <h2 class="rise">Qué les voy a mostrar hoy.</h2>
           <div class="row">
-            <div class="card"><h3>El problema</h3><p>Una cola de consultas repetidas y el riesgo de inventar una norma.</p></div>
-            <div class="card"><h3>Cómo está armado</h3><p>Interfaz, reglas del asistente, motor de búsqueda y documentos.</p></div>
-            <div class="card"><h3>De dónde sabe</h3><p>Reglamento interno, contrato colectivo y Código del Trabajo.</p></div>
+            <div class="card"><h3>1. El problema</h3><p>750 tickets/mes · objetivos medibles · restricciones</p></div>
+            <div class="card"><h3>2. RAG dual</h3><p>Corpus interno + externo · Ley Karin · Código del Trabajo</p></div>
+            <div class="card"><h3>3. Arquitectura</h3><p>8 módulos · LangChain · control de historial</p></div>
           </div>
-          <div class="row-2">
-            <div class="card"><h3>Cuando no sabe</h3><p>Si no hay respaldo en esos papeles, deriva. No completa con ocurrencias.</p></div>
-            <div class="card"><h3>Cómo se comprueba</h3><p>En el chat se ve qué fragmentos usó. Después, la demo en vivo.</p></div>
-          </div>
-        `,
-        note: "Les dejo el mapa para que no se pierdan. Primero el problema de negocio. Después cómo está construido y de dónde saca la información. Luego lo más delicado: qué hace cuando no sabe. Y al final lo abrimos y hacemos tres preguntas reales."
-      },
-      {
-        html: `
-          <div class="kicker">El problema</div>
-          <h2 class="rise">RRHH saturado con las mismas preguntas.</h2>
           <div class="row">
-            <div class="card"><p>Carga</p><div class="metric"><em data-count="750">0</em></div><p>consultas al mes: bonos, permisos, reglamento.</p></div>
-            <div class="card"><p>Tiempo</p><div class="metric">&lt; <em data-count="5">0</em>s</div><p>la meta es responder en segundos, no al día siguiente.</p></div>
-            <div class="card"><p>Inventar normas</p><div class="metric"><em>0</em></div><p>si no está en el documento, no hay respuesta inventada.</p></div>
+            <div class="card"><h3>4. Prompts + guardrails</h3><p>Temperature 0.1 · anti-alucinación en código</p></div>
+            <div class="card"><h3>5. Pipeline técnico</h3><p>Embeddings · MMR k=4 · ChromaDB</p></div>
+            <div class="card"><h3>6. Demo en vivo</h3><p>IntegraBot · pruebas automatizadas · GitHub</p></div>
           </div>
         `,
-        note: "El punto de partida es una cola. Imaginen unos setecientos cincuenta tickets al mes, y varios son siempre lo mismo: la colación, los días administrativos, cómo denunciar por Ley Karin. Eso hoy espera a alguien del área.<br><br>Yo no busqué un chat simpático. Busqué uno que conteste rápido —en el orden de unos segundos— y, sobre todo, que no se invente derecho laboral."
+        time: "0:45 – 1:15",
+        note: "Les dejo el mapa: caso organizacional, RAG con fuentes internas y externas, arquitectura modular, prompts con guardrails, pipeline técnico con el porqué de cada decisión, y demo en vivo con pruebas automatizadas."
       },
       {
         html: `
-          <div class="kicker">Hasta dónde llega</div>
-          <h2 class="rise">Filtra lo repetido. Lo difícil lo decide una persona.</h2>
+          <div class="kicker">Problema organizacional</div>
+          <h2 class="rise">Gestión de Personas saturada.</h2>
+          <div class="row">
+            <div class="card"><p>Consultas / mes</p><div class="metric"><em data-count="750">0</em></div><p>Bonos, permisos, reglamento, Ley Karin</p></div>
+            <div class="card"><p>Meta latencia</p><div class="metric">&lt;<em data-count="5">0</em>s</div><p>Índice local + Gemini Flash</p></div>
+            <div class="card"><p>Invención de datos</p><div class="metric"><em>0</em></div><p>Sin evidencia → derivación humana</p></div>
+          </div>
+          <p class="sub">Error laboral = riesgo legal para empresa y trabajador.</p>
+        `,
+        time: "1:15 – 2:00",
+        note: "El área recibe unas 750 consultas al mes, muchas repetitivas. Eso genera demora y riesgo de respuestas incorrectas — en RRHH eso tiene consecuencia legal. Tres objetivos en config.py: autogestión 24/7, respuesta bajo 5 segundos, y cero invención: si no está en el documento, escala a Gestión de Personas."
+      },
+      {
+        html: `
+          <div class="kicker">Por qué RAG</div>
+          <h2 class="rise">Recuperar primero. Generar después.</h2>
           <div class="row-2">
-            <div class="card"><h3>Se queda el asistente</h3><ul><li>Consultas frecuentes, a cualquier hora</li><li>La misma fuente oficial para todos</li><li>Artículo o cláusula citada</li></ul></div>
-            <div class="card"><h3>Se queda Gestión de Personas</h3><ul><li>Sumarios y casos de acoso complejos</li><li>Finiquitos en conflicto</li><li>Decisiones de jefatura</li></ul></div>
+            <div class="card"><h3>RAG</h3><ul><li>Búsqueda semántica en PDF</li><li>LLM solo con ese contexto</li><li>Corpus actualizable sin reentrenar</li></ul></div>
+            <div class="card"><h3>No elegimos</h3><ul><li>Fine-tuning (docs cambian)</li><li>Chatbot genérico (alucina)</li><li>Agente autónomo abierto (sin control)</li></ul></div>
           </div>
-          <p class="sub">No reemplaza al área. Le saca el ruido de encima.</p>
+          <p class="lead" style="margin-top:16px;font-size:17px">IntegraBot es un <strong>agente conversacional acotado</strong>: recuperar → citar → o derivar. LangChain + LCEL orquesta la tubería.</p>
         `,
-        note: "Importante decirlo de entrada: IntegraBot no reemplaza a Gestión de Personas. Se queda con lo repetitivo —la misma pregunta, la misma respuesta oficial, con artículo o cláusula—. Lo sensible, un sumario, un finiquito en conflicto, una decisión de jefatura, sigue siendo humano.<br><br>El valor es menos cola y más consistencia, no sustituir criterio."
+        time: "2:00 – 2:45",
+        note: "RAG significa: primero recuperamos fragmentos con búsqueda semántica, después el LLM responde solo con ese contexto. No fine-tuning porque el contrato y reglamento cambian. No agente autónomo con herramientas abiertas: en RRHH necesitamos trazabilidad, no autonomía sin límites. Usamos LangChain con LCEL."
       },
       {
         html: `
-          <div class="kicker">Cómo está armado</div>
-          <h2 class="rise">Cada pieza hace una sola cosa.</h2>
-          <div class="flow">
-            <div class="pill">Interfaz · app.py</div><div class="arrow">→</div>
-            <div class="pill">Reglas · prompts.py</div><div class="arrow">→</div>
-            <div class="pill">Búsqueda · rag_engine.py</div><div class="arrow">→</div>
-            <div class="pill">Documentos · data + Chroma</div>
-          </div>
-          <div class="row" style="margin-top:22px">
-            <div class="card"><h3>Interfaz</h3><p>Recibe la pregunta del trabajador. Nada más.</p></div>
-            <div class="card"><h3>Motor</h3><p>Busca en los documentos y arma la respuesta. La pantalla no indexa PDF.</p></div>
-            <div class="card"><h3>Memoria</h3><p>Los archivos oficiales quedan guardados en Chroma, en el computador.</p></div>
+          <div class="kicker">Alcance y restricciones</div>
+          <h2 class="rise">Qué hace y qué no hace.</h2>
+          <div class="row-2">
+            <div class="card"><h3 class="ok">Sí hace</h3><ul><li>Orientación documental con cita</li><li>Corpus interno + externo</li><li>Follow-ups con historial (3 turnos)</li><li>Trazabilidad en expander RAG</li></ul></div>
+            <div class="card"><h3 class="warn">No hace</h3><ul><li>Asesoría legal ni sumarios</li><li>Reemplazar investigación Ley Karin</li><li>Login / portal RRHH real</li><li>PDF oficiales (simulados en evaluación)</li></ul></div>
           </div>
         `,
-        note: "Lo armé en capas, a propósito. Streamlit es solo la cara: recibe la pregunta. El prompt son las reglas de comportamiento. El motor busca y genera. Y los PDF con Chroma son la memoria.<br><br>Si mañana cambiamos de modelo, no tengo que rehacer la interfaz ni volver a escribir los documentos. Cada archivo tiene una responsabilidad."
+        time: "2:45 – 3:15",
+        note: "Restricciones del diseño: no es asesoría legal. Ley Karin: orienta procedimiento, no reemplaza investigación. PDF simulados para la evaluación. Sin login ni portal real. Casos sensibles — finiquitos litigiosos, sumarios — siempre humanos. Eso es honesto y demuestra criterio de diseño."
       },
       {
         html: `
-          <div class="kicker">Cómo busca</div>
-          <h2 class="rise">No le pasamos el PDF entero al modelo.</h2>
+          <div class="kicker">Corpus interno</div>
+          <h2 class="rise">Políticas de IntegraServicios.</h2>
+          <div class="row-2">
+            <div class="card"><span class="chip tag-in">interno</span><h3>RIOHS 2026</h3><ul><li>Jornada 44 h · colación</li><li>Licencias médicas · EPP</li><li>Denuncia acoso · Ley Karin</li><li>Canal denuncias@integraservicios.cl</li></ul></div>
+            <div class="card"><span class="chip tag-in">interno</span><h3>Contrato Colectivo 2026–27</h3><ul><li>Colación <strong>$85.000</strong></li><li><strong>3</strong> días administrativos</li><li>Aguinaldo F.P. <strong>$180.000</strong></li><li>Bono escolaridad · becas</li></ul></div>
+          </div>
+        `,
+        time: "3:15 – 3:45",
+        note: "Documentos internos: RIOHS con jornada, licencias, EPP y procedimiento Ley Karin. Contrato Colectivo con colación 85 mil, 3 días administrativos, aguinaldo 180 mil, escolaridad. Metadata source_type interno en cada fragmento indexado."
+      },
+      {
+        html: `
+          <div class="kicker">Corpus externo</div>
+          <h2 class="rise">Normativa laboral chilena.</h2>
+          <div class="card" style="margin-top:12px">
+            <span class="chip tag-ex">externo</span>
+            <h3>Código del Trabajo / Ley Karin (extractos)</h3>
+            <table>
+              <tr><th>Norma</th><th>Contenido indexado</th></tr>
+              <tr><td>Art. 32</td><td>Horas extraordinarias — recargo 50%</td></tr>
+              <tr><td>Art. 35</td><td>Descanso dominical</td></tr>
+              <tr><td>Art. 67</td><td>Feriado anual</td></tr>
+              <tr><td>Arts. 163 / 177</td><td>Finiquitos</td></tr>
+              <tr><td>Ley N° 21.643</td><td>Ley Karin — acoso, violencia en el trabajo</td></tr>
+            </table>
+          </div>
+          <p class="sub">El colaborador no distingue interno vs externo — el copiloto sí, y lo muestra en la UI.</p>
+        `,
+        time: "3:45 – 4:15",
+        note: "Corpus externo: extractos del Código del Trabajo y Ley Karin 21.643. Horas extra, finiquitos, feriado, descanso dominical. El trabajador pregunta sin saber si es reglamento o ley; por eso etiquetamos interno/externo en metadata y en la interfaz."
+      },
+      {
+        html: `
+          <div class="kicker">Arquitectura modular</div>
+          <h2 class="rise">8 módulos · una responsabilidad cada uno.</h2>
+          <div class="mod-grid rise">
+            <div class="mod"><strong>app.py</strong>UI Streamlit · chat · expander fuentes</div>
+            <div class="mod"><strong>config.py</strong>Caso org. · parámetros RAG</div>
+            <div class="mod"><strong>ingestion.py</strong>PDF · chunks · ChromaDB</div>
+            <div class="mod"><strong>rag_engine.py</strong>RAGPipeline orquestador</div>
+            <div class="mod"><strong>prompts.py</strong>System Prompt · reglas del asistente</div>
+            <div class="mod"><strong>guardrails.py</strong>Validación post-LLM</div>
+            <div class="mod"><strong>conversation.py</strong>Historial 3 turnos</div>
+            <div class="mod"><strong>errors.py</strong>Errores sin traceback</div>
+          </div>
           <div class="flow">
-            <div class="pill">PDF</div><div class="arrow">→</div>
-            <div class="pill">Fragmentos 500/50</div><div class="arrow">→</div>
-            <div class="pill">Embedding</div><div class="arrow">→</div>
-            <div class="pill">Chroma</div><div class="arrow">→</div>
-            <div class="pill">4 fragmentos</div><div class="arrow">→</div>
-            <div class="pill">Gemini</div>
+            <div class="pill sm">Pregunta</div><div class="arrow">→</div>
+            <div class="pill sm">Historial</div><div class="arrow">→</div>
+            <div class="pill sm">MMR ×4</div><div class="arrow">→</div>
+            <div class="pill sm">Contexto</div><div class="arrow">→</div>
+            <div class="pill sm">Gemini</div><div class="arrow">→</div>
+            <div class="pill sm">Guardrails</div><div class="arrow">→</div>
+            <div class="pill sm">UI + fuentes</div>
+          </div>
+        `,
+        time: "4:15 – 5:00",
+        note: "Arquitectura desacoplada: ocho módulos. Flujo: pregunta, historial reciente, retriever MMR con 4 fragmentos, contexto formateado, Gemini, guardrails, respuesta con expander de trazabilidad. Si falla API, errors.py muestra mensaje institucional sin traceback."
+      },
+      {
+        html: `
+          <div class="kicker">Ingesta e indexación</div>
+          <h2 class="rise">De PDF a vectores semánticos.</h2>
+          <div class="flow">
+            <div class="pill">PyPDFLoader</div><div class="arrow">→</div>
+            <div class="pill">tag interno/externo</div><div class="arrow">→</div>
+            <div class="pill">500 / 50</div><div class="arrow">→</div>
+            <div class="pill">gemini-embedding-001</div><div class="arrow">→</div>
+            <div class="pill">chroma_db_v2</div>
           </div>
           <table>
-            <tr><th>Decisión</th><th>En simple</th></tr>
-            <tr><td>Cuatro fragmentos</td><td>Varias pistas distintas, no un solo párrafo sacado de contexto.</td></tr>
-            <tr><td>Cortes jurídicos</td><td>Respetamos artículo y cláusula, para no partir una norma a la mitad.</td></tr>
-            <tr><td>Diversidad</td><td>Que no recupere cuatro veces lo mismo con otras palabras.</td></tr>
+            <tr><th>Decisión</th><th>Por qué</th></tr>
+            <tr><td>Embeddings</td><td>Búsqueda por significado, no solo palabras exactas</td></tr>
+            <tr><td>Chunk 500 / overlap 50</td><td>Respeta artículos y cláusulas sin mezclar normas</td></tr>
+            <tr><td>Separadores legales</td><td>Artículo · Cláusula · Ley N</td></tr>
+            <tr><td>generate_data.py</td><td>Corpus reproducible para el evaluador</td></tr>
           </table>
         `,
-        note: "Cuando llega una pregunta, no le mandamos el manual completo a Gemini. Partimos los PDF en fragmentos, los convertimos en vectores, los guardamos en Chroma y recuperamos cuatro trozos distintos —no cuatro copias de lo mismo—.<br><br>Gemini solo habla con eso. Y los cortes respetan artículos y cláusulas, para no partir una norma al medio."
+        time: "5:00 – 5:45",
+        note: "Ingesta: PyPDF, metadata source_type, splitter 500/50 con separadores legales, embeddings gemini-embedding-001 — sucesor del embedding-001 retirado por Google —, persistencia en chroma_db_v2. Embeddings convierten texto en vectores para búsqueda semántica."
       },
       {
         html: `
-          <div class="kicker">Los documentos</div>
-          <h2 class="rise">Tres fuentes: lo de la empresa y la ley.</h2>
+          <div class="kicker">Recuperación y generación</div>
+          <h2 class="rise">MMR · Gemini · temperature 0.1</h2>
           <div class="row">
-            <div class="card"><h3>RIOHS 2026</h3><p>Jornadas, licencias, EPP, cómo denunciar por Ley Karin.</p></div>
-            <div class="card"><h3>Contrato colectivo</h3><p>Aguinaldo, escolaridad, días administrativos, colación.</p></div>
-            <div class="card"><h3>Código del Trabajo</h3><p>Domingo, finiquitos, horas extra y el marco legal.</p></div>
+            <div class="card"><h3>Retriever MMR</h3><p><span class="mono">k=4</span> · <span class="mono">λ=0.75</span></p><p>4 fragmentos diversos, no 4 copias iguales</p></div>
+            <div class="card"><h3>Gemini 2.5 Flash</h3><p>Latencia &lt; 5 s · Q&A documental</p></div>
+            <div class="card"><h3>Temperature 0.1</h3><p>Poca aleatoriedad · menos alucinación · respuestas repetibles en temas legales</p></div>
           </div>
+          <p class="sub">Creatividad alta = riesgo de parafrasear montos o inventar artículos. En RRHH priorizamos precisión.</p>
         `,
-        note: "La memoria son tres documentos. Por un lado lo interno: el reglamento y el contrato colectivo, con bonos, colación, días administrativos. Por el otro, el Código del Trabajo y lo de Ley Karin.<br><br>Cruza empresa y ley, pero cuando cita dice de qué archivo salió. No mezcla las fuentes."
+        time: "5:45 – 6:30",
+        note: "MMR k=4 con lambda 0.75: relevancia más diversidad — útil cuando Ley Karin necesita RIOHS y Código a la vez. Gemini Flash por latencia. Temperature 0.1: controla aleatoriedad del modelo; baja = menos creatividad = menos alucinación = respuestas repetibles. No queremos que redacte normas."
       },
       {
         html: `
-          <div class="kicker">Las reglas</div>
-          <h2 class="rise">El asistente no improvisa su rol.</h2>
+          <div class="kicker">Prompts + guardrails + historial</div>
+          <h2 class="rise">Dos capas anti-alucinación.</h2>
           <div class="row-2">
-            <div class="card"><h3>Qué recibe</h3><p>El contexto que encontró en los documentos y la pregunta de la persona.</p></div>
-            <div class="card"><h3>Cómo cita</h3><p><span class="mono">[Fuente: Contrato_Colectivo_2026.pdf, Cláusula 4]</span></p></div>
+            <div class="card"><h3>System Prompt</h3><ul><li>Rol acotado RRHH</li><li>Inyección: context + question + chat_history</li><li>Cita <span class="mono">[Fuente: pdf, Art.]</span></li><li>Frase exacta de derivación</li></ul></div>
+            <div class="card"><h3>guardrails.py</h3><p>Si respuesta vacía o sin cita ni derivación → fuerza frase institucional.</p><p style="margin-top:8px"><strong>conversation.py:</strong> últimas 3 interacciones para follow-ups.</p></div>
           </div>
-          <p class="lead" style="margin-top:20px;font-size:18px">Temperatura baja. Sin creatividad jurídica: no queremos que “redacte” una norma.</p>
+          <div class="quote" style="margin-top:14px;font-size:15px">“No dispongo de la información oficial en los manuales de la empresa ni en el Código del Trabajo para responder con certeza. He derivado tu consulta al equipo de Gestión de Personas.”</div>
         `,
-        note: "Las reglas están escritas, no se las dejo al modelo. Tiene un rol, recibe lo que se recuperó y la pregunta, y tiene que citar así: archivo y cláusula o artículo.<br><br>Temperatura baja, porque no queremos creatividad jurídica. Y si en una misma pregunta hay algo que sí está en los papeles y algo que no, lo separa: responde lo documentado y deriva lo otro."
+        time: "6:30 – 7:15",
+        note: "Prompt con rol, inyección triple, citas obligatorias, frase exacta de derivación. guardrails.py valida en código después del LLM — el prompt solo no basta. conversation.py inyecta 3 turnos para '¿y el aguinaldo?' tras hablar de beneficios."
       },
       {
         html: `
-          <div class="kicker">Cuando no sabe</div>
-          <h2 class="rise">Si no está en los papeles, no se completa solo.</h2>
-          <div class="quote">“No dispongo de la información oficial en los manuales de la empresa ni en el Código del Trabajo para responder con certeza. He derivado tu consulta al equipo de Gestión de Personas.”</div>
-          <p class="sub">Prueba que voy a hacer en la demo: “¿Mañana va a llover?” En esos documentos no hay clima.</p>
-        `,
-        note: "Esto, para mí, es tan importante como acertar un bono. Si alguien pregunta si mañana llueve, en los manuales no hay clima. El sistema tiene que decir que no puede responder con certeza y derivar a Gestión de Personas.<br><br>Si se inventa un pronóstico, el diseño falló. No es un error simpático: es el caso que demuestra que no alucina."
-      },
-      {
-        html: `
-          <div class="kicker">De dónde salió</div>
-          <h2 class="rise">Se puede auditar cada respuesta.</h2>
+          <div class="kicker">Trazabilidad</div>
+          <h2 class="rise">Coherencia dato ↔ respuesta.</h2>
           <div class="row-2">
-            <div class="card"><h3>En el chat</h3><p>Se abren los cuatro fragmentos consultados. El que coincide con la cita queda marcado primero.</p></div>
-            <div class="card"><h3>El código</h3><p>Está en GitHub, con README para instalarlo. La clave de la API no viaja al repositorio.</p></div>
+            <div class="card"><h3>En la UI</h3><p>Expander <em>Ver fuentes documentales consultadas (RAG)</em></p><ul><li>4 fragmentos MMR siempre visibles</li><li>PDF · página · badge interno/externo</li><li>Cita alineada resaltada</li></ul></div>
+            <div class="card"><h3>errors.py</h3><p>API caída · cuota · clave inválida → mensaje institucional, botón reintentar. Sin tracebacks al colaborador.</p></div>
           </div>
-          <p class="sub">github.com/DeboradorDeMundos/integraservicios-rrhh</p>
         `,
-        note: "No hay que creerle al asistente de palabra. En el chat se abre de dónde salió cada respuesta: se ven los cuatro fragmentos que consultó, y el que coincidió con la cita queda marcado primero.<br><br>El código está en GitHub, con el README para levantarlo. La clave de la API no está en el repositorio."
+        time: "7:15 – 7:45",
+        note: "En cada respuesta se abre el expander y se compara fragmento recuperado con lo que dijo el modelo. errors.py traduce fallos técnicos a avisos claros — operación responsable en organización real."
       },
       {
         html: `
-          <div class="kicker">Con qué corre</div>
-          <h2 class="rise">Stack concreto, para que arranque de verdad.</h2>
+          <div class="kicker">Stack y evidencia</div>
+          <h2 class="rise">Reproducible en GitHub.</h2>
           <table>
-            <tr><th>Pieza</th><th>Tecnología</th></tr>
-            <tr><td>Modelo</td><td>Gemini 2.5 Flash</td></tr>
-            <tr><td>Embeddings</td><td>gemini-embedding-001 — el que Google mantiene hoy</td></tr>
-            <tr><td>Orquestación</td><td>LangChain</td></tr>
-            <tr><td>Memoria e interfaz</td><td>ChromaDB local · Streamlit</td></tr>
+            <tr><th>Capa</th><th>Tecnología</th></tr>
+            <tr><td>Orquestación</td><td>LangChain · LCEL</td></tr>
+            <tr><td>LLM</td><td>Gemini 2.5 Flash · temp 0.1</td></tr>
+            <tr><td>Embeddings</td><td>gemini-embedding-001</td></tr>
+            <tr><td>Vector store</td><td>ChromaDB local · chroma_db_v2</td></tr>
+            <tr><td>UI</td><td>Streamlit · app.py</td></tr>
+            <tr><td>Pruebas</td><td>scripts/smoke_test.py · --live</td></tr>
           </table>
         `,
-        note: "Corre con Gemini 2.5 Flash, embeddings actuales de Google, LangChain, Chroma en el computador y Streamlit. Nada de eso cobra en la demo de curso.<br><br>Una nota práctica, por si sale: el embedding-001 de los tutoriales viejos Google ya no lo sirve. Usamos el sucesor, porque un sistema que enciende vale más que un nombre copiado de un PDF."
+        time: "7:45 – 8:15",
+        note: "Stack completo en README. smoke_test.py valida 6 casos incluyendo pregunta fuera de dominio. GOOGLE_API_KEY en .env, nunca en repo."
       },
       {
         html: `
-          <div class="kicker">Demo</div>
-          <h2 class="rise">Tres preguntas. Las mismas que haría un trabajador.</h2>
-          <div class="row">
-            <div class="card"><h3>1. Un beneficio</h3><p>Días administrativos o colación. Tiene que citar el contrato.</p></div>
-            <div class="card"><h3>2. Cumplimiento</h3><p>Cómo denunciar por Ley Karin. Tiene que anclarse al reglamento.</p></div>
-            <div class="card"><h3>3. Lo que no sabe</h3><p>¿Va a llover mañana? Tiene que derivar. Después abro las fuentes.</p></div>
+          <div class="kicker">Demo en vivo</div>
+          <h2 class="rise">localhost:8501 — 5 preguntas.</h2>
+          <div class="row" style="grid-template-columns:1fr">
+            <div class="card"><p><span class="demo-num">1</span><strong>Colación</strong> → $85.000 · Contrato · <span class="chip tag-in">interno</span> · abrir expander</p></div>
+            <div class="card"><p><span class="demo-num">2</span><strong>Horas extra</strong> → Art. 32 · Código · <span class="chip tag-ex">externo</span></p></div>
+            <div class="card"><p><span class="demo-num">3</span><strong>Ley Karin</strong> → RIOHS + Código · corpus mixto</p></div>
+            <div class="card"><p><span class="demo-num">4</span><strong>¿Mañana llover?</strong> → derivación · anti-alucinación</p></div>
+            <div class="card"><p><span class="demo-num">5</span><strong>Follow-up</strong> · días admin → “¿y el aguinaldo?” · historial conversacional</p></div>
           </div>
-          <p class="sub">Si tarda un segundo, está buscando en los documentos. Eso es normal.</p>
+          <p class="sub">En cada una: “El fragmento recuperado es la evidencia — coherencia RAG.”</p>
         `,
-        note: "Ahora lo muestro. Paso al chat. Si ven los puntitos de carga, es el sistema pensando: no me pongo nervioso.<br><br>Primero un beneficio: días administrativos o colación; tiene que citar el contrato. Segundo, cumplimiento: cómo denunciar por Ley Karin, anclado al reglamento. Tercero, la trampa: si va a llover. Ahí debería derivar.<br><br>Después abro las fuentes para que vean qué documentos tocó, y señalo cuál coincidió con la cita."
+        time: "8:15 – 11:00",
+        note: "DEMO EN VIVO. Abrir localhost:8501. 1) Colación 85000 Contrato interno. 2) Horas extra Art 32 externo. 3) Ley Karin mixto. 4) ¿Llover? derivar. 5) Días admin luego aguinaldo — historial. Siempre abrir expander RAG. Frase clave: el fragmento recuperado es la evidencia."
+      },
+      {
+        html: `
+          <div class="kicker">Limitaciones</div>
+          <h2 class="rise">Lo que declaramos con honestidad.</h2>
+          <div class="row-2">
+            <div class="card"><ul><li>PDF simulados (pipeline igual en producción)</li><li>Dependencia Google AI Studio</li><li>Sin autenticación de usuarios</li></ul></div>
+            <div class="card"><ul><li>No reemplaza RRHH en casos complejos</li><li>No sustituye asesoría legal ni investigaciones</li><li>Despliegue productivo requeriría integración con portal RRHH</li></ul></div>
+          </div>
+        `,
+        time: "11:00 – 11:30",
+        note: "Limitaciones honestas: PDF simulados, API externa, sin login, casos sensibles con humanos. Demuestra criterio de diseño, no debilidad."
       },
       {
         html: `
           <div class="kicker">Cierre</div>
-          <h2 class="rise">No se inventa las normas. Las busca.</h2>
-          <p class="lead">IntegraBot baja la cola de consultas repetidas, cita de dónde salió cada respuesta y, cuando no tiene respaldo, se la pasa a una persona.</p>
-          <p class="sub">Diego Madrid · Ingeniería de soluciones con IA · 011V_OLS</p>
-          <p class="ok" style="margin-top:20px;font-size:20px">github.com/DeboradorDeMundos/integraservicios-rrhh</p>
+          <h2 class="rise">Busca. Cita. O deriva.</h2>
+          <p class="lead">IntegraBot une políticas internas con normativa chilena, con trazabilidad visible, temperature baja, guardrails en código y escalada sin evidencia.</p>
+          <p class="sub" style="margin-top:16px">Diego Alejandro Madrid Muñoz · IntegraServicios S.A.</p>
         `,
-        note: "Con eso cierro. IntegraBot no opina ni se inventa el Código del Trabajo: busca, cita y, cuando no tiene respaldo, escala.<br><br>Soy Diego Madrid. Muchas gracias. Si tienen preguntas, con gusto las respondo."
+        time: "11:30 – 12:00",
+        note: "Cierre: IntegraBot no inventa normas — busca, cita o deriva. Objetivos alineados al caso org. Código y pruebas en GitHub. Gracias — quedo atento a preguntas sobre MMR, temperature, corpus dual o guardrails."
       }
     ];
+
+    document.getElementById("tot").textContent = String(slides.length).padStart(2, "0");
 
     let i = 0;
     const deck = document.getElementById("deck");
     const notesEl = document.getElementById("notes");
+    const notesFab = document.getElementById("notesFab");
     const bar = document.getElementById("bar");
     const num = document.getElementById("num");
     const flash = document.getElementById("flash");
@@ -393,9 +561,17 @@
         requestAnimationFrame(tick);
       });
     }
+
+    function toggleNotes(force) {
+      const on = force !== undefined ? force : !notesEl.classList.contains("on");
+      notesEl.classList.toggle("on", on);
+      notesFab.classList.toggle("on", on);
+    }
+
     function render() {
       deck.innerHTML = slides.map((s, n) => `<section class="slide${n===i?" on":""}">${s.html}</section>`).join("");
-      notesEl.innerHTML = `<b>Guion ${i+1} / ${slides.length}</b><br><br>${slides[i].note}`;
+      const s = slides[i];
+      notesEl.innerHTML = `<b>${i+1} / ${slides.length}</b><div class="time">${s.time || ""}</div>${s.note}`;
       bar.style.width = ((i+1)/slides.length)*100 + "%";
       num.textContent = String(i+1).padStart(2,"0") + " / " + String(slides.length).padStart(2,"0");
       document.getElementById("sl").textContent = String(i+1).padStart(2,"0");
@@ -405,20 +581,28 @@
       void flash.offsetWidth;
       flash.classList.add("go");
     }
+
     function go(d) {
       i = Math.max(0, Math.min(slides.length-1, i+d));
       render();
     }
+
     document.getElementById("prev").onclick = () => go(-1);
     document.getElementById("next").onclick = () => go(1);
+    notesFab.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleNotes();
+    });
+    notesEl.addEventListener("click", (e) => e.stopPropagation());
     addEventListener("keydown", (e) => {
       if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); go(1); }
       if (e.key === "ArrowLeft") go(-1);
-      if (e.key === "n" || e.key === "N") notesEl.classList.toggle("on");
+      if (e.key === "`") toggleNotes();
+      if (e.key === "Escape" && notesEl.classList.contains("on")) toggleNotes(false);
       if (e.key === "f" || e.key === "F") document.documentElement.requestFullscreen?.();
     });
     deck.addEventListener("click", (e) => {
-      if (e.target.closest("button")) return;
+      if (e.target.closest("button") || e.target.closest(".notes") || e.target.closest(".notes-fab")) return;
       go(e.clientX > innerWidth/2 ? 1 : -1);
     });
     addEventListener("mousemove", (e) => {
@@ -427,12 +611,11 @@
       document.documentElement.style.setProperty("--gx", e.clientX + "px");
       document.documentElement.style.setProperty("--gy", e.clientY + "px");
     });
-    document.querySelectorAll("button").forEach((b) => {
+    document.querySelectorAll(".nav button, .notes-fab").forEach((b) => {
       b.addEventListener("mouseenter", () => cur.classList.add("big"));
       b.addEventListener("mouseleave", () => cur.classList.remove("big"));
     });
 
-    /* Misma red 3D: cada slide es una cámara distinta */
     (function neural() {
       const c = document.getElementById("net");
       const ctx = c.getContext("2d");
@@ -440,19 +623,22 @@
       let w, h, nodes, links, t = 0, fly = 0;
       const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
       const views = [
-        { name: "ESTABLECIMIENTO", x: 0, y: 18, z: 40, ry: 0.04, rx: 0.22, rz: 0, zoom: 0.72, vx: "50%", vy: "46%", pulse: 1.0 },
-        { name: "ÓRBITA DERECHA", x: 110, y: -28, z: -20, ry: 0.72, rx: 0.18, rz: 0.04, zoom: 1.12, vx: "62%", vy: "40%", pulse: 1.1 },
-        { name: "CONTRAVISTA", x: -140, y: 36, z: 30, ry: -0.85, rx: -0.12, rz: -0.06, zoom: 1.28, vx: "38%", vy: "52%", pulse: 1.15 },
-        { name: "CENITAL", x: 20, y: -160, z: 10, ry: 0.18, rx: 0.92, rz: 0, zoom: 1.05, vx: "50%", vy: "28%", pulse: 0.9 },
-        { name: "PERFIL", x: 8, y: 10, z: 0, ry: 1.48, rx: 0.08, rz: 0, zoom: 1.18, vx: "70%", vy: "48%", pulse: 1.05 },
-        { name: "SINAPSIS", x: 40, y: 8, z: -30, ry: 0.55, rx: 0.12, rz: 0.08, zoom: 1.72, vx: "46%", vy: "44%", pulse: 1.35 },
-        { name: "HEMISFERIO", x: -90, y: 12, z: 50, ry: -0.42, rx: 0.16, rz: 0, zoom: 1.08, vx: "34%", vy: "46%", pulse: 1.0 },
-        { name: "NÚCLEO", x: 6, y: 4, z: 8, ry: 0.12, rx: 0.06, rz: 0, zoom: 2.35, vx: "50%", vy: "48%", pulse: 1.4 },
-        { name: "SILENCIO", x: 210, y: 90, z: 80, ry: -1.15, rx: 0.28, rz: 0.12, zoom: 0.58, vx: "72%", vy: "62%", pulse: 0.35 },
-        { name: "TRAZAS", x: 48, y: -18, z: -12, ry: 0.32, rx: 0.2, rz: -0.05, zoom: 1.55, vx: "54%", vy: "42%", pulse: 1.25 },
-        { name: "CORTE", x: -55, y: 95, z: -40, ry: -0.28, rx: -0.55, rz: 0.1, zoom: 1.32, vx: "44%", vy: "68%", pulse: 1.05 },
-        { name: "DISPARO", x: 24, y: -8, z: 16, ry: 0.22, rx: 0.1, rz: 0, zoom: 1.42, vx: "52%", vy: "44%", pulse: 1.45 },
-        { name: "HORIZONTE", x: 0, y: 30, z: 70, ry: 0.15, rx: 0.32, rz: 0, zoom: 0.62, vx: "50%", vy: "40%", pulse: 0.85 }
+        { name: "INICIO", x: 0, y: 18, z: 40, ry: 0.04, rx: 0.22, rz: 0, zoom: 0.72, vx: "50%", vy: "46%", pulse: 1.0 },
+        { name: "MAPA", x: 80, y: -20, z: -10, ry: 0.55, rx: 0.15, rz: 0.03, zoom: 1.0, vx: "58%", vy: "42%", pulse: 1.05 },
+        { name: "PROBLEMA", x: -60, y: 30, z: 20, ry: -0.4, rx: 0.1, rz: 0, zoom: 1.15, vx: "42%", vy: "50%", pulse: 1.1 },
+        { name: "RAG", x: 40, y: 8, z: -25, ry: 0.35, rx: 0.12, rz: 0.05, zoom: 1.25, vx: "48%", vy: "44%", pulse: 1.2 },
+        { name: "ALCANCE", x: -100, y: 15, z: 35, ry: -0.65, rx: 0.08, rz: -0.04, zoom: 1.08, vx: "36%", vy: "48%", pulse: 1.0 },
+        { name: "INTERNO", x: 20, y: -12, z: 10, ry: 0.2, rx: 0.18, rz: 0, zoom: 1.35, vx: "52%", vy: "40%", pulse: 1.15 },
+        { name: "EXTERNO", x: -40, y: 20, z: -15, ry: -0.3, rx: 0.14, rz: 0.06, zoom: 1.3, vx: "44%", vy: "52%", pulse: 1.12 },
+        { name: "ARQUITECTURA", x: 10, y: 5, z: 0, ry: 0.12, rx: 0.06, rz: 0, zoom: 1.5, vx: "50%", vy: "48%", pulse: 1.25 },
+        { name: "INGESTA", x: 55, y: -18, z: -20, ry: 0.48, rx: 0.2, rz: 0, zoom: 1.4, vx: "54%", vy: "42%", pulse: 1.18 },
+        { name: "MMR", x: -70, y: 25, z: 30, ry: -0.5, rx: 0.16, rz: 0, zoom: 1.45, vx: "38%", vy: "50%", pulse: 1.3 },
+        { name: "PROMPTS", x: 30, y: 10, z: 15, ry: 0.28, rx: 0.1, rz: 0.03, zoom: 1.55, vx: "50%", vy: "46%", pulse: 1.22 },
+        { name: "TRAZAS", x: -20, y: -8, z: -30, ry: -0.15, rx: 0.22, rz: 0, zoom: 1.6, vx: "46%", vy: "44%", pulse: 1.28 },
+        { name: "STACK", x: 90, y: 30, z: 50, ry: 0.7, rx: 0.12, rz: 0.05, zoom: 1.1, vx: "62%", vy: "48%", pulse: 1.05 },
+        { name: "DEMO", x: 8, y: 4, z: 8, ry: 0.15, rx: 0.05, rz: 0, zoom: 2.0, vx: "50%", vy: "48%", pulse: 1.5 },
+        { name: "LÍMITES", x: -120, y: 40, z: 60, ry: -0.9, rx: 0.25, rz: 0.08, zoom: 0.95, vx: "32%", vy: "55%", pulse: 0.9 },
+        { name: "CIERRE", x: 0, y: 25, z: 75, ry: 0.1, rx: 0.28, rz: 0, zoom: 0.65, vx: "50%", vy: "38%", pulse: 0.85 }
       ];
       let cam = { ...views[0] };
       let target = { ...views[0] };
@@ -465,7 +651,7 @@
         c.style.height = innerHeight + "px";
         ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
         w = innerWidth; h = innerHeight;
-        const n = Math.min(92, Math.floor(w * h / 13500));
+        const n = Math.min(88, Math.floor(w * h / 14000));
         nodes = [];
         for (let k = 0; k < n; k++) {
           const ring = k % 6;
@@ -487,16 +673,10 @@
         links = [];
         for (let a = 0; a < nodes.length; a++) {
           for (let b = a + 1; b < nodes.length; b++) {
-            const d = Math.hypot(
-              nodes[a].wx - nodes[b].wx,
-              nodes[a].wy - nodes[b].wy,
-              nodes[a].wz - nodes[b].wz
-            );
+            const d = Math.hypot(nodes[a].wx - nodes[b].wx, nodes[a].wy - nodes[b].wy, nodes[a].wz - nodes[b].wz);
             if (d < 118 && Math.random() < 0.28) links.push({ a, b, pulses: [] });
           }
         }
-        document.getElementById("nod").textContent = nodes.length;
-        document.getElementById("syn").textContent = links.length;
       }
 
       function burst(mult) {
@@ -511,21 +691,10 @@
         let x = n.wx - cam.x, y = n.wy - cam.y, z = n.wz - cam.z;
         const cy = Math.cos(cam.ry), sy = Math.sin(cam.ry);
         const cx = Math.cos(cam.rx), sx = Math.sin(cam.rx);
-        const cz = Math.cos(cam.rz), sz = Math.sin(cam.rz);
-        let x1 = x * cy + z * sy;
-        let z1 = -x * sy + z * cy;
-        let y1 = y * cx - z1 * sx;
-        let z2 = y * sx + z1 * cx;
-        const x2 = x1 * cz - y1 * sz;
-        const y2 = x1 * sz + y1 * cz;
+        let x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+        let y1 = y * cx - z1 * sx, z2 = y * sx + z1 * cx;
         const persp = 520 / (520 + z2);
-        return {
-          x: w / 2 + x2 * persp * cam.zoom,
-          y: h / 2 + y2 * persp * cam.zoom,
-          s: persp,
-          z: z2,
-          vis: z2 > -480 && persp > 0.15
-        };
+        return { x: w/2 + x1 * persp * cam.zoom, y: h/2 + y1 * persp * cam.zoom, s: persp, z: z2, vis: z2 > -480 && persp > 0.15 };
       }
 
       window.setNetView = function (idx) {
@@ -546,68 +715,52 @@
         t += 0.008;
         const k = reduced ? 1 : 0.042 + fly * 0.09;
         fly *= 0.935;
-        const drift = reduced ? 0 : Math.sin(t * 0.22) * 10;
-        cam.x = lerp(cam.x, target.x + drift, k);
+        cam.x = lerp(cam.x, target.x + Math.sin(t * 0.22) * 10, k);
         cam.y = lerp(cam.y, target.y + Math.cos(t * 0.18) * 6, k);
         cam.z = lerp(cam.z, target.z, k);
-        cam.ry = lerp(cam.ry, target.ry + (reduced ? 0 : Math.sin(t * 0.13) * 0.06), k);
+        cam.ry = lerp(cam.ry, target.ry + Math.sin(t * 0.13) * 0.06, k);
         cam.rx = lerp(cam.rx, target.rx, k);
-        cam.rz = lerp(cam.rz, target.rz, k);
         cam.zoom = lerp(cam.zoom, target.zoom, k);
 
         ctx.clearRect(0, 0, w, h);
         ctx.globalCompositeOperation = "lighter";
-
         const drawn = nodes.map((n, i) => {
           if (!n.core && !reduced) {
             n.wx += n.vx; n.wy += n.vy; n.wz += n.vz;
-            const mag = Math.hypot(n.wx, n.wy, n.wz);
-            if (mag > 430) { n.vx *= -1; n.vy *= -1; n.vz *= -1; }
+            if (Math.hypot(n.wx, n.wy, n.wz) > 430) { n.vx *= -1; n.vy *= -1; n.vz *= -1; }
           } else if (n.core) {
-            n.wx = Math.sin(t) * 6;
-            n.wy = Math.cos(t * 0.9) * 5;
-            n.wz = Math.sin(t * 0.7) * 4;
+            n.wx = Math.sin(t) * 6; n.wy = Math.cos(t * 0.9) * 5; n.wz = Math.sin(t * 0.7) * 4;
           }
           n.e *= 0.976;
           return { n, i, p: project(n) };
         }).filter((d) => d.p.vis).sort((a, b) => a.p.z - b.p.z);
 
         const byI = new Map(drawn.map((d) => [d.i, d.p]));
-        const rate = 0.004 + (target.pulse || 1) * 0.006;
-
         for (const L of links) {
           const A = byI.get(L.a), B = byI.get(L.b);
           if (!A || !B) continue;
           const depth = Math.max(0.2, (A.s + B.s) / 2);
-          ctx.beginPath();
-          ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y);
-          ctx.strokeStyle = `rgba(90,170,255,${(0.035 + 0.07 * depth) * (0.55 + (nodes[L.a].e + nodes[L.b].e) / 3)})`;
-          ctx.lineWidth = depth;
-          ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y);
+          ctx.strokeStyle = `rgba(90,170,255,${(0.04 + 0.07 * depth) * (0.55 + (nodes[L.a].e + nodes[L.b].e) / 3)})`;
+          ctx.lineWidth = depth; ctx.stroke();
           L.pulses = L.pulses.filter((pu) => pu.p < 1);
           for (const pu of L.pulses) {
             if (!reduced) pu.p += pu.s;
-            const x = A.x + (B.x - A.x) * pu.p;
-            const y = A.y + (B.y - A.y) * pu.p;
-            ctx.beginPath();
-            ctx.arc(x, y, (pu.gold ? 2.3 : 1.7) * depth, 0, Math.PI * 2);
+            const x = A.x + (B.x - A.x) * pu.p, y = A.y + (B.y - A.y) * pu.p;
+            ctx.beginPath(); ctx.arc(x, y, (pu.gold ? 2.3 : 1.7) * depth, 0, Math.PI * 2);
             ctx.fillStyle = pu.gold ? "rgba(240,195,106,.95)" : "rgba(92,225,255,.95)";
             ctx.fill();
-            if (pu.p > 0.92) nodes[L.b].e = Math.min(1, nodes[L.b].e + 0.35);
           }
-          if (!reduced && Math.random() < rate) L.pulses.push({ p: 0, s: 0.01 + Math.random() * 0.02, gold: Math.random() > 0.6 });
+          if (!reduced && Math.random() < 0.005 * (target.pulse || 1)) L.pulses.push({ p: 0, s: 0.01 + Math.random() * 0.02, gold: Math.random() > 0.6 });
         }
-
         for (const { n, p } of drawn) {
           const size = (n.r + n.e * 2) * p.s;
           if (n.core) {
             const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 28 * p.s);
-            g.addColorStop(0, "rgba(240,195,106,.92)");
-            g.addColorStop(1, "rgba(43,127,255,0)");
+            g.addColorStop(0, "rgba(240,195,106,.92)"); g.addColorStop(1, "rgba(43,127,255,0)");
             ctx.beginPath(); ctx.arc(p.x, p.y, 26 * p.s, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
           }
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+          ctx.beginPath(); ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
           ctx.fillStyle = n.core ? "#fff" : `rgba(92,225,255,${0.22 + n.e * 0.75})`;
           ctx.fill();
         }
@@ -617,9 +770,6 @@
       addEventListener("resize", spawn);
       spawn();
       if (!reduced) tick();
-      else {
-        ctx.clearRect(0, 0, w, h);
-      }
       burst(1);
     })();
 

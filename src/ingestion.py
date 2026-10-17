@@ -13,7 +13,6 @@ import shutil
 
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_community.vectorstores import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from src.config import (
@@ -99,7 +98,7 @@ def load_and_chunk_documents():
     return splitter.split_documents(tagged)
 
 
-def build_vectorstore(embeddings: GoogleGenerativeAIEmbeddings) -> Chroma:
+def build_vectorstore(embeddings) -> Chroma:
     """Crea o reutiliza ChromaDB; reconstruye si cambió la versión del índice."""
     db_exists = os.path.isdir(PERSIST_DIRECTORY) and os.listdir(PERSIST_DIRECTORY)
 
@@ -116,7 +115,7 @@ def build_vectorstore(embeddings: GoogleGenerativeAIEmbeddings) -> Chroma:
 
     if not db_exists or _needs_rebuild():
         chunks = load_and_chunk_documents()
-        print("Indexando documentos PDF en ChromaDB con Google Embeddings...")
+        print("Indexando documentos PDF en ChromaDB...")
         vectorstore = Chroma.from_documents(
             documents=chunks,
             embedding=embeddings,

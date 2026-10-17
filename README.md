@@ -8,7 +8,7 @@ Sistema de **Retrieval-Augmented Generation (RAG)** para **IntegraServicios S.A.
 | **GitHub** | [DeboradorDeMundos](https://github.com/DeboradorDeMundos) |
 | **Repositorio** | [integraservicios-rrhh](https://github.com/DeboradorDeMundos/integraservicios-rrhh) |
 | **Asignatura** | INGENIERIA DE SOLUCIONES CON INTELIGENCIA ARTIFICIAL_011V_OLS |
-| **Proyecto** | Evaluación Numero 1 Duoc uc · Copiloto RAG de RRHH y cumplimiento laboral |
+| **Proyecto** | EP1 RAG + **EP2 Agente funcional** · RRHH y cumplimiento laboral |
 
 ---
 
@@ -58,17 +58,25 @@ Flujo:
 integraservicios-rrhh/
 ├── data/                         # Corpus dual (interno + externo)
 ├── scripts/
-│   └── smoke_test.py             # Validación IE1–IE4 (offline y --live)
+│   ├── smoke_test.py             # Validación EP1 (IE1–IE4)
+│   └── agent_scenarios_test.py   # Escenarios EP2 (plan, memoria, agente)
 ├── src/
 │   ├── __init__.py
-│   ├── config.py                 # IE1: caso org. + parámetros RAG
-│   ├── ingestion.py              # IE3: carga, etiquetado, ChromaDB
-│   ├── conversation.py           # IE4: historial acotado
-│   ├── prompts.py                # IE2: rol, inyección, anti-alucinación
-│   ├── guardrails.py             # IE2: validación post-respuesta
-│   ├── rag_engine.py             # IE3/IE4: orquestador RAGPipeline
+│   ├── config.py                 # Caso org. + parámetros RAG/agente
+│   ├── ingestion.py              # Carga, etiquetado, ChromaDB
+│   ├── retriever.py              # Retrievers MMR filtrados interno/externo
+│   ├── conversation.py           # Memoria corta (historial acotado)
+│   ├── memory.py                 # Memoria larga de caso (JSON por sesión)
+│   ├── planner.py                # Planificación y clasificación de tareas
+│   ├── agent_tools.py            # Tools LangChain (consulta/escritura)
+│   ├── agent.py                  # Orquestador agente EP2
+│   ├── agent_prompts.py          # System prompt del agente
+│   ├── tickets.py                # Tickets RRHH mock (INT-xxxxx)
+│   ├── prompts.py                # Prompt RAG + anti-alucinación
+│   ├── guardrails.py             # Validación post-respuesta
+│   ├── rag_engine.py             # Pipeline RAG (usado por tools)
 │   └── errors.py                 # Mensajes de error para el usuario
-├── app.py                        # Chat, historial y fuentes
+├── app.py                        # Chat + trazabilidad agente/plan/fuentes
 ├── generate_data.py
 ├── requirements.txt
 ├── .env.example
@@ -78,7 +86,44 @@ integraservicios-rrhh/
 
 ---
 
-## 3. Ingeniería de prompts (IE2)
+## 3. Agente funcional EP2 (ISY0101)
+
+IntegraBot **no es solo RAG**: implementa un agente con **LangChain tools** (`bind_tools` + bucle ReAct).
+
+| Requisito EP2 | Implementación |
+| --- | --- |
+| Consulta | `buscar_politicas_internas`, `buscar_normativa_externa` |
+| Escritura | `registrar_ticket_gestion_personas`, `guardar_memoria_caso` |
+| Razonamiento | `planner.py` (plan priorizado) + decisión de tools |
+| Memoria corta | Historial reciente en prompt (`conversation.py`) |
+| Memoria larga | `./case_memory/{session_id}.json` |
+| Recuperación semántica | Chroma MMR + filtros `source_type` |
+| Trazabilidad UI | Expander *Orquestación del agente (EP2)* |
+
+```mermaid
+flowchart LR
+    U[Usuario] --> A[agent.run_agent]
+    A --> P[planner]
+    P --> T[Tools LangChain]
+    T --> R[RAG / Chroma]
+    T --> M[memory.py]
+    T --> K[tickets_rrhh.jsonl]
+    T --> A
+    A --> U
+```
+
+Pruebas EP2:
+
+```bash
+python scripts/agent_scenarios_test.py
+python scripts/agent_scenarios_test.py --live
+```
+
+Guía de informe (5 páginas): ver `INFORME_EVA2.md` en el repo local (plantilla de contenido).
+
+---
+
+## 4. Ingeniería de prompts (IE2)
 
 El System Prompt (`src/prompts.py`) usa `PromptTemplate` de LangChain con:
 
@@ -92,7 +137,7 @@ El System Prompt (`src/prompts.py`) usa `PromptTemplate` de LangChain con:
 
 ---
 
-## 4. Pipeline RAG dual (IE3)
+## 5. Pipeline RAG dual (IE3)
 
 | Capa | Implementación |
 | --- | --- |
@@ -116,14 +161,14 @@ Corpus dual:
 
 ---
 
-## 5. Requisitos
+## 6. Requisitos
 
 - Python 3.10 o superior
 - Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey) (`GOOGLE_API_KEY`)
 
 ---
 
-## 6. Instalación
+## 7. Instalación
 
 ```bash
 git clone https://github.com/DeboradorDeMundos/integraservicios-rrhh.git
@@ -151,7 +196,7 @@ pip install -r requirements.txt
 
 ---
 
-## 7. Configuración de la API Key
+## 8. Configuración de la API Key
 
 ```bash
 # Windows (PowerShell)
@@ -171,7 +216,7 @@ El archivo `.env` **no se sube a GitHub** (está en `.gitignore`, junto con `ven
 
 ---
 
-## 8. Ejecución
+## 9. Ejecución
 
 ```bash
 python generate_data.py
@@ -189,7 +234,7 @@ python scripts/smoke_test.py --live
 
 ---
 
-## 9. Trazabilidad en la interfaz
+## 10. Trazabilidad en la interfaz
 
 Bajo cada respuesta hay un expander:
 
@@ -208,7 +253,7 @@ Preguntas de demostración:
 
 ---
 
-## 10. Errores visibles vs. técnicos
+## 11. Errores visibles vs. técnicos
 
 La UI no muestra tracebacks. `src/errors.py` traduce fallas de red, cupo, clave o documentos faltantes a avisos institucionales, con botón de reintento. El detalle técnico queda en la consola.
 

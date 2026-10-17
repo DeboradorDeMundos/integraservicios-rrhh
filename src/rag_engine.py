@@ -16,21 +16,15 @@ from dataclasses import dataclass
 
 from dotenv import load_dotenv
 from langchain_core.output_parsers import StrOutputParser
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_core.runnables import RunnableLambda
 
-from src.config import (
-    CORPUS_LABELS,
-    EMBEDDING_MODEL,
-    LLM_MODEL,
-    LLM_TEMPERATURE,
-    RETRIEVER_K,
-    RETRIEVER_LAMBDA,
-    SourceType,
-)
+from src.config import CORPUS_LABELS, SourceType
 from src.conversation import format_chat_history
 from src.guardrails import apply_response_guardrails
-from src.ingestion import build_vectorstore
+from src.local_generator import generate_local_answer
+from src.models import create_llm, provider_label, uses_local_generator
 from src.prompts import SYSTEM_PROMPT
+from src.retriever import get_retriever
 
 load_dotenv()
 
@@ -72,6 +66,14 @@ class RAGPipeline:
             tuple[str, list]: respuesta final y documentos recuperados (MMR k=4).
         """
         retrieved_docs = self.retriever.invoke(question)
+        return self.answer_with_docs(question, retrieved_docs, chat_history)
+
+    def answer_with_docs(
+        self,
+        question: str,
+        retrieved_docs: list,
+        chat_history: str = "",
+    ) -> tuple[str, list]:
         context = format_docs(retrieved_docs)
         history = chat_history or "Sin conversación previa."
         raw_answer = self.generation_chain.invoke(
@@ -86,24 +88,21 @@ class RAGPipeline:
 
 
 def initialize_rag_system() -> RAGPipeline:
-    """
-    Inicializa ChromaDB y la cadena de generación con Google Gemini 2.5 Flash.
-    """
-    if not os.getenv("GOOGLE_API_KEY"):
-        raise EnvironmentError(
-            "Falta GOOGLE_API_KEY. Copia .env.example a .env y coloca tu clave de Google AI Studio."
+    """Inicializa ChromaDB y la cadena de generación según MODEL_PROVIDER."""
+    print(f"Proveedor activo: {provider_label()}")
+    retriever = get_retriever()
+
+    if uses_local_generator():
+        generation_chain = RunnableLambda(
+            lambda inputs: generate_local_answer(
+                inputs["context"],
+                inputs["question"],
+                inputs.get("chat_history", ""),
+            )
         )
-
-    embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL)
-    vectorstore = build_vectorstore(embeddings)
-
-    retriever = vectorstore.as_retriever(
-        search_type="mmr",
-        search_kwargs={"k": RETRIEVER_K, "lambda_mult": RETRIEVER_LAMBDA},
-    )
-
-    llm = ChatGoogleGenerativeAI(model=LLM_MODEL, temperature=LLM_TEMPERATURE)
-    generation_chain = SYSTEM_PROMPT | llm | StrOutputParser()
+    else:
+        llm = create_llm()
+        generation_chain = SYSTEM_PROMPT | llm | StrOutputParser()
 
     return RAGPipeline(retriever=retriever, generation_chain=generation_chain)
 

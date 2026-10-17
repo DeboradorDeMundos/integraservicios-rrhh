@@ -16,6 +16,8 @@ ENV/
 # --- Base vectorial local (se regenera al ejecutar la app) ---
 chroma_db/
 chroma_db_v2/
+chroma_db_local/
+chroma_db_groq/
 
 # --- Datos generados localmente (python generate_data.py) ---
 data/*.pdf
@@ -25,6 +27,11 @@ data/*.pdf
 
 # Excepción: la rúbrica Duoc exige README en el repo para evaluar
 !README.md
+!INFORME_EVA2.md
+
+# --- Estado runtime EP2 (tickets mock, memoria de caso) ---
+case_memory/
+tickets_local/
 
 # --- Presentaciones, informes y borradores locales ---
 presentacion*.html

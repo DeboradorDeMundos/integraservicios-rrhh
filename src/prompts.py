@@ -17,6 +17,14 @@ DERIVATION_PHRASE = (
     "He derivado tu consulta al equipo de Gestión de Personas."
 )
 
+SENSITIVE_ESCALATION_REPLY = (
+    "Detecté un **caso sensible** (pagos, finiquitos, sumarios, cheques litigiosos u otro "
+    "conflicto laboral). IntegraBot **no sustituye** asesoría legal ni la resolución del "
+    "conflicto: solo orienta con documentos generales y **escala a Gestión de Personas**.\n\n"
+    "Un ejecutivo revisará tu situación con la información que entregaste. "
+    "Revisa las fuentes adjuntas si necesitas marco normativo de referencia."
+)
+
 SYSTEM_PROMPT_TEXT = """
 Eres "IntegraBot", el Copiloto de Recursos Humanos y Cumplimiento Laboral de IntegraServicios S.A.
 

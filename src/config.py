@@ -8,6 +8,7 @@ de datos normativos (derivación explícita si no hay evidencia documental).
 """
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from enum import Enum
 
@@ -45,13 +46,26 @@ CORPUS_LABELS: dict[SourceType, str] = {
     SourceType.EXTERNAL: "Normativa externa (Código del Trabajo / Ley Karin)",
 }
 
-PERSIST_DIRECTORY = "./chroma_db_v2"
 DATA_DIRECTORY = "./data"
-INDEX_VERSION = "v2-source-type"
+
+# google | groq | local  — local no requiere API (ideal si se agotó la cuota de Google)
+MODEL_PROVIDER = os.getenv("MODEL_PROVIDER", "google").strip().lower()
 
 EMBEDDING_MODEL = "gemini-embedding-001"
-LLM_MODEL = "gemini-2.5-flash"
+HF_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+# Override en .env si hay 429: GOOGLE_LLM_MODEL=gemini-2.5-flash
+LLM_MODEL = os.getenv("GOOGLE_LLM_MODEL", "gemini-3.6-flash").strip()
+GROQ_LLM_MODEL = os.getenv("GROQ_LLM_MODEL", "llama-3.1-8b-instant")
 LLM_TEMPERATURE = 0.1
+
+_INDEX_BY_PROVIDER = {
+    "google": ("./chroma_db_v2", "v2-source-type-gemini"),
+    "groq": ("./chroma_db_groq", "v2-source-type-hf"),
+    "local": ("./chroma_db_local", "v2-source-type-hf"),
+}
+PERSIST_DIRECTORY, INDEX_VERSION = _INDEX_BY_PROVIDER.get(
+    MODEL_PROVIDER, _INDEX_BY_PROVIDER["google"]
+)
 
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
@@ -70,6 +84,33 @@ CHUNK_SEPARATORS = [
 RETRIEVER_K = 4
 RETRIEVER_LAMBDA = 0.75
 MAX_HISTORY_TURNS = 3
+
+# EP2 — Agente: memoria de caso, planificación y tickets RRHH
+CASE_MEMORY_DIR = "./case_memory"
+AGENT_MAX_TOOL_TURNS = 4
+AGENT_HISTORY_LIMIT = 8
+
+SENSITIVE_HR_KEYWORDS: tuple[str, ...] = (
+    "finiquito",
+    "sumario",
+    "litig",
+    "litigioso",
+    "cheque",
+    "judicial",
+    "despido injustificado",
+    "denuncia penal",
+    "acoso sexual",
+)
+
+OUT_OF_DOMAIN_HINTS: tuple[str, ...] = (
+    "llover",
+    "clima",
+    "fútbol",
+    "futbol",
+    "partido",
+    "bitcoin",
+    "receta de",
+)
 
 # Casos de demostración alineados con la rúbrica (IE3).
 DEMO_QUESTIONS: tuple[str, ...] = (

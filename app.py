@@ -1,7 +1,11 @@
 # app.py
 """
 Interfaz de chat de IntegraBot (Streamlit).
-
+Búsqueda de Máxima Relevancia Marginal (MMR).
+barrera de contencion (Guardrails).
+Chunk 500 se divide en fragmentos (o "chunks")
+Overlap 50 solapamiento de 50 caracteres o tokens.
+Reglamento Interno de Orden, Higiene y Seguridad (RIOSHS).
 Historial en burbujas propias (sin st.chat_message) para evitar el
 efecto gris de elementos 'stale' al responder la segunda consulta.
 """
@@ -9,14 +13,15 @@ import html
 import logging
 import os
 import re
+import uuid
 
 import streamlit as st
 from dotenv import load_dotenv
 
+from src.agent import initialize_agent, run_agent
 from src.config import CORPUS_LABELS, SourceType
-from src.conversation import format_chat_history
 from src.errors import classify_exception
-from src.rag_engine import get_rag_chain
+from src.models import provider_label
 
 load_dotenv()
 logging.basicConfig(level=logging.ERROR, format="%(asctime)s [%(name)s] %(message)s")
@@ -63,10 +68,35 @@ st.markdown(
         [data-testid="stSidebar"] {
             background: linear-gradient(180deg, #071A30 0%, #0B2A4A 100%);
         }
-        [data-testid="stSidebar"] * { color: #F4F8FC !important; }
+        [data-testid="stSidebar"] .stMarkdown,
         [data-testid="stSidebar"] .stMarkdown p,
+        [data-testid="stSidebar"] label,
+        [data-testid="stSidebar"] [data-testid="stWidgetLabel"],
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3 {
+            color: #F4F8FC !important;
+        }
         [data-testid="stSidebar"] .stCaption { color: #B8C9DE !important; }
         [data-testid="stSidebar"] hr { border-color: #1E4A73; }
+        [data-testid="stSidebar"] input,
+        [data-testid="stSidebar"] textarea {
+            color: #0B2A4A !important;
+            -webkit-text-fill-color: #0B2A4A !important;
+            background-color: #FFFFFF !important;
+            caret-color: #0B5CAB !important;
+        }
+        [data-testid="stSidebar"] input::placeholder,
+        [data-testid="stSidebar"] textarea::placeholder {
+            color: #66758C !important;
+            opacity: 1 !important;
+            -webkit-text-fill-color: #66758C !important;
+        }
+        [data-testid="stSidebar"] [data-baseweb="input"],
+        [data-testid="stSidebar"] [data-baseweb="textarea"] {
+            background-color: #FFFFFF !important;
+            border-color: #C9D8EB !important;
+        }
         [data-testid="stSidebar"] button {
             background: #0B5CAB !important;
             color: #FFFFFF !important;
@@ -465,6 +495,8 @@ def render_message(message, show_retry: bool = False, index: int = 0):
         else:
             st.markdown(documented)
 
+        if message.get("plan_lines") or message.get("tools_used") or message.get("tickets"):
+            render_agent_trace(message)
         if message.get("sources"):
             render_sources(message["sources"], message.get("content", ""))
 
@@ -482,28 +514,36 @@ def retry_last_query():
         st.session_state.pending_question = question
 
 
-def collect_sources(docs):
-    return [
-        {
-            "name": os.path.basename(doc.metadata.get("source", "PDF")),
-            "page": doc.metadata.get("page", 0) + 1,
-            "content": doc.page_content,
-            "source_type": doc.metadata.get("source_type", SourceType.INTERNAL.value),
-        }
-        for doc in docs
-    ]
+def render_agent_trace(message: dict) -> None:
+    with st.expander("🧭 Orquestación del agente (EP2)", expanded=False):
+        if message.get("task_kind"):
+            st.caption(f"Clasificación: **{message['task_kind']}**")
+        if message.get("plan_lines"):
+            st.markdown("**Plan de tareas**")
+            for line in message["plan_lines"]:
+                st.markdown(f"- {line}")
+        if message.get("tools_used"):
+            st.markdown("**Herramientas ejecutadas:** " + ", ".join(message["tools_used"]))
+        if message.get("tickets"):
+            for ticket in message["tickets"]:
+                st.success(
+                    f"Ticket {ticket.get('id')} · {ticket.get('categoria')} · "
+                    f"prioridad {ticket.get('prioridad')}"
+                )
 
 
 @st.cache_resource
-def load_rag():
-    """Carga una sola vez el pipeline RAG (recuperación + generación + guardrails)."""
-    return get_rag_chain()
+def load_agent():
+    """Precarga índice vectorial + agente (EP2)."""
+    initialize_agent()
+    return True
 
 
 with st.sidebar:
     st.markdown('<div class="brand-mark">IS</div>', unsafe_allow_html=True)
     st.markdown("### IntegraServicios S.A.")
     st.caption("Copiloto interno de Gestión de Personas")
+    st.caption(f"Motor: {provider_label()}")
     st.divider()
     st.markdown("**Cómo usarlo**")
     st.markdown(
@@ -517,10 +557,16 @@ with st.sidebar:
     st.markdown("- **Interno:** Contrato_Colectivo_2026.pdf")
     st.markdown("- **Externo:** Codigo_del_Trabajo_Chile.pdf")
     st.divider()
+    st.markdown("**Memoria de caso (EP2)**")
+    st.text_input("Nombre (opcional)", key="profile_nombre")
+    st.text_input("RUT (opcional)", key="profile_rut")
+    st.caption(f"Sesión: {st.session_state.get('session_id', '')[:12]}…")
+    st.divider()
     if st.button("Nueva conversación", use_container_width=True):
         st.session_state.messages = []
         st.session_state.pending_question = None
         st.session_state.last_prompt = None
+        st.session_state.session_id = uuid.uuid4().hex
     st.caption(
         "Si el dato no está en los documentos, no se inventa: "
         "la consulta se deriva a Gestión de Personas."
@@ -535,6 +581,7 @@ st.markdown(
             <span class="badge">RIOHS IntegraServicios 2026</span>
             <span class="badge">Contrato Colectivo</span>
             <span class="badge">Código del Trabajo / Ley Karin</span>
+            <span class="badge">Agente EP2 · tools + memoria</span>
         </div>
     </div>
     """,
@@ -542,7 +589,7 @@ st.markdown(
 )
 
 try:
-    pipeline = load_rag()
+    load_agent()
 except Exception as exc:
     info = classify_exception(exc)
     st.markdown(
@@ -557,7 +604,7 @@ except Exception as exc:
         unsafe_allow_html=True,
     )
     if st.button("Reintentar conexión", use_container_width=True):
-        load_rag.clear()
+        load_agent.clear()
         st.rerun()
     st.stop()
 
@@ -567,6 +614,8 @@ if "pending_question" not in st.session_state:
     st.session_state.pending_question = None
 if "last_prompt" not in st.session_state:
     st.session_state.last_prompt = None
+if "session_id" not in st.session_state:
+    st.session_state.session_id = uuid.uuid4().hex
 
 show_welcome = (
     not st.session_state.messages and not st.session_state.pending_question
@@ -618,13 +667,29 @@ if busy:
         if msg["role"] == "user"
     )
     try:
-        history = format_chat_history(st.session_state.messages[:-2])
-        response, retrieved_docs = pipeline.query(query, chat_history=history)
-        sources = collect_sources(retrieved_docs)
+        history = [
+            m
+            for m in st.session_state.messages[:-2]
+            if m.get("role") in {"user", "assistant"} and not m.get("pending")
+        ]
+        profile = {
+            "nombre": st.session_state.get("profile_nombre", ""),
+            "rut": st.session_state.get("profile_rut", ""),
+        }
+        turn = run_agent(
+            query,
+            history,
+            st.session_state.session_id,
+            profile=profile,
+        )
         st.session_state.messages[-1] = {
             "role": "assistant",
-            "content": response,
-            "sources": sources,
+            "content": turn.text,
+            "sources": turn.sources,
+            "plan_lines": turn.plan_lines,
+            "tools_used": turn.tools_used,
+            "tickets": turn.tickets,
+            "task_kind": turn.task_kind,
             "error": False,
         }
     except Exception as exc:
