@@ -413,7 +413,7 @@ def run_tool_agent(
     )
 
 
-def run_agent(
+def _dispatch_agent(
     question: str,
     history: list[dict[str, str]],
     session_id: str,
@@ -451,6 +451,25 @@ def run_agent(
                 plan, question, chat_history, session_id, profile
             )
         raise
+
+
+def run_agent(
+    question: str,
+    history: list[dict[str, str]],
+    session_id: str,
+    profile: dict[str, str] | None = None,
+) -> AgentTurn:
+    """Punto de entrada del chat. Registra el turno para la observabilidad EP3."""
+    from src.observability import record_agent_turn
+
+    with record_agent_turn(question, session_id) as trace:
+        try:
+            turn = _dispatch_agent(question, history, session_id, profile)
+        except Exception as exc:
+            trace.fail(exc)
+            raise
+        trace.attach(turn)
+        return turn
 
 
 __all__ = ["AgentTurn", "initialize_agent", "run_agent"]

@@ -4,6 +4,7 @@
 
 # --- Entorno virtual Python ---
 venv/
+node_modules/
 .venv/
 env/
 ENV/
@@ -28,10 +29,14 @@ data/*.pdf
 # Excepción: la rúbrica Duoc exige README en el repo para evaluar
 !README.md
 !INFORME_EVA2.md
+!INFORME_EVA3.md
 
 # --- Estado runtime EP2 (tickets mock, memoria de caso) ---
 case_memory/
 tickets_local/
+
+# --- Telemetría EP3 (preguntas de chat; el resumen agregado sí puede versionarse) ---
+observability/runs.jsonl
 
 # --- Presentaciones, informes y borradores locales ---
 presentacion*.html

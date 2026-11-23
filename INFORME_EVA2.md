@@ -45,7 +45,7 @@
 
 ## Resumen ejecutivo
 
-IntegraBot evoluciona del **copiloto RAG (EP1)** a un **agente orquestado** para Gestión de Personas de IntegraServicios S.A. El agente integra **consulta documental** (RAG interno/externo), **escritura** (tickets RRHH mock e memoria de caso) y **razonamiento** (clasificación de tareas + plan priorizado). La implementación usa **LangChain** (bucle ReAct con `bind_tools`), memoria corta y larga, y pruebas en `scripts/agent_scenarios_test.py`. Se mantiene la política EP1 de **cero invención** mediante `guardrails.py` y derivación institucional.
+IntegraBot evoluciona del **copiloto RAG (EP1)** a un **agente orquestado** para Gestión de Personas de IntegraServicios S.A. El agente integra **consulta documental** (RAG interno/externo), **escritura** (tickets RRHH mock y memoria de caso) y **razonamiento** (clasificación de tareas + plan priorizado). La implementación usa **LangChain** (bucle ReAct con `bind_tools`), memoria corta y larga, y pruebas en `scripts/agent_scenarios_test.py`. Se mantiene la política EP1 de **cero invención** mediante `guardrails.py` y derivación institucional.
 
 ---
 
@@ -207,16 +207,14 @@ python scripts/agent_scenarios_test.py
 streamlit run app.py
 ```
 
-### 5.4 Entrega AVA (checklist)
+### 5.4 Limitaciones
 
-| # | Acción |
+| Limitación | Descripción |
 | --- | --- |
-| 1 | Completar conclusión y reflexión **sin IA** |
-| 2 | Exportar informe Word/PDF (≤ 5 páginas cuerpo) |
-| 3 | Adjuntar capturas (orquestación, fuentes, ticket) |
-| 4 | Subir AVA + enlace GitHub |
-| 5 | Enviar correo al docente |
-| 6 | Presentación oral + demo en vivo |
+| PDF simulados | Generados con `generate_data.py` para la evaluación |
+| Tickets mock | Formato INT-xxxxx; no integración con mesa de ayuda real |
+| Sin SSO | Demo académica en Streamlit |
+| Cuota API | Mitigada con `MODEL_PROVIDER=local` o Groq en ensayos |
 
 ---
 
@@ -235,17 +233,17 @@ streamlit run app.py
 
 ## 7. Conclusión
 
-_[Redactar en tus palabras, sin IA: qué aporta el agente a IntegraServicios, qué aprendiste sobre planificación/memoria/tools, y cómo se relaciona con el EP1.]_
+Con la Evaluación Parcial N°2, IntegraBot deja de ser únicamente un copiloto que responde citando PDFs y pasa a actuar como un asistente de Gestión de Personas con pasos visibles: clasifica la consulta, elige si busca en reglamento interno o en normativa externa, mantiene memoria de la conversación y, cuando corresponde, registra un ticket INT para escalamiento. Para IntegraServicios S.A. esto apunta a aliviar consultas repetitivas sin relajar el cumplimiento: se conservan los guardrails y las citas del EP1, sumando autonomía controlada en flujos multietapa y en casos sensibles. Los indicadores IE1 a IE6 quedan respaldados en código, diagrama, README y pruebas automatizadas del repositorio GitHub.
 
-### Reflexión individual — Diego Alejandro Madrid Muñoz
+### 7.1 Reflexión individual — Diego Alejandro Madrid Muñoz
 
-_[8–12 líneas sin IA: tu rol, dificultades (cuota API, casos sensibles, demo), aprendizaje.]_
+En esta entrega extendí el trabajo de la EP1 hacia el agente: implementé `planner.py`, `memory.py`, `agent_tools.py` y la conexión en `app.py`, incluyendo el expander de orquestación para que el docente vea plan y herramientas en la demo. Lo que más me complicó fue equilibrar la cuota de la API de Gemini con pruebas en vivo — tuve que usar modo local en algunos ensayos — y corregir comportamientos raros, como un seguimiento de ticket que terminaba buscando en el RAG en lugar de leer la memoria del caso. También afiné el manejo de consultas sensibles (finiquito o cheque litigioso) para que abran ticket sin inventar montos. Aprendí que en RRHH un agente no gana por sonar más «inteligente», sino por ser trazable y prudente; por eso prioricé scripts de prueba y una demo estable para la presentación.
 
 ---
 
 ## 8. Declaración de uso de IA
 
-Se empleó IA generativa (Cursor IDE, Google Gemini API) como apoyo en código, documentación, diagramas y presentación HTML. El análisis del caso, las decisiones de diseño, las conclusiones y la reflexión individual son responsabilidad del autor. Duoc UC (2025): https://bibliotecas.duoc.cl/ia
+Se empleó IA generativa (Cursor IDE, Google Gemini API) como apoyo en revisión de código, borrador de documentación, diagramas y presentación HTML. El análisis del caso, las decisiones de diseño, las conclusiones y la reflexión individual fueron elaborados y revisados por el autor. Duoc UC (2025): https://bibliotecas.duoc.cl/ia
 
 ---
 

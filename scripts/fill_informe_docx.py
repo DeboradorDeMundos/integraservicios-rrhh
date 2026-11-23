@@ -89,8 +89,21 @@ def add_bullet(doc: Document, text: str):
     return p
 
 
+def add_table_caption(doc: Document, title: str) -> None:
+    p = doc.add_paragraph()
+    run = p.add_run(title)
+    set_run_font(run, bold=True)
+    pf = p.paragraph_format
+    pf.line_spacing_rule = WD_LINE_SPACING.MULTIPLE
+    pf.line_spacing = 1.5
+    pf.space_before = Pt(8)
+    pf.space_after = Pt(4)
+    pf.first_line_indent = Inches(0)
+    pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
+
+
 def add_table(doc: Document, title: str, headers: list[str], rows: list[list[str]]):
-    add_body(doc, title)
+    add_table_caption(doc, title)
     table = doc.add_table(rows=1 + len(rows), cols=len(headers))
     try:
         table.style = "Table Grid"

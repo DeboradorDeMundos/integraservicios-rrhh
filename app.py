@@ -571,6 +571,7 @@ with st.sidebar:
         "Si el dato no está en los documentos, no se inventa: "
         "la consulta se deriva a Gestión de Personas."
     )
+    st.caption("Monitoreo EP3: streamlit run dashboard.py")
 
 st.markdown(
     """
@@ -582,6 +583,7 @@ st.markdown(
             <span class="badge">Contrato Colectivo</span>
             <span class="badge">Código del Trabajo / Ley Karin</span>
             <span class="badge">Agente EP2 · tools + memoria</span>
+            <span class="badge">Observabilidad EP3</span>
         </div>
     </div>
     """,

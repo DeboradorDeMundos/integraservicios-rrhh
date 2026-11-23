@@ -1,0 +1,67 @@
+P  3|normal      |    |INGENIERÍA DE SOLUCIONES CON INTELIGENCIA ARTIFICIAL
+P  4|normal      |    |ISY0101 — Sección 011V
+P  5|normal      |    |San Bernardo, Chile
+P 10|normal      |    |IntegraBot — Copiloto RAG de RRHH y Cumplimiento Laboral
+P 16|normal      |    |Integrante:
+P 18|normal      |    |Diego Alejandro Madrid Muñoz
+P 19|normal      |    |RUT: 19.914.672-6
+P 23|normal      |    |Prof. Jaime Andrés Menéndez Silva
+P 25|normal      |    |Evaluación Parcial N°1 — Encargo con Presentación
+P 26|normal      |    |14 de septiembre de 2026
+P 27|normal      |PAGE|
+P 28|normal      |PAGE|
+P 29|normal      |    |ÍNDICE DE CONTENIDO
+P 30|normal      |    |
+P 31|normal      |PAGE|
+P 32|Heading 1   |    |Introducción
+P 33|normal      |    |El presente informe documenta el diseño e implementación de IntegraBot, copiloto de Recursos Humanos para Inte
+P 34|normal      |    |IntegraBot utiliza Retrieval-Augmented Generation (RAG) con LangChain, ChromaDB, embeddings gemini-embedding-0
+P 35|Heading 1   |    |1. Análisis del caso organizacional (IE1)
+P 36|normal      |    |IntegraServicios S.A. es una empresa de servicios cuya área de Gestión de Personas recibe aproximadamente 750 
+P 37|normal      |    |Tabla 1. Objetivos de intervención de IntegraBot
+P 38|normal      |    |
+P 39|Heading 2   |    |1.1 Datos disponibles y restricciones
+P 40|normal      |    |Tabla 2. Corpus dual indexado
+P 41|normal      |    |
+P 42|normal      |    |Los PDF se generan con generate_data.py para reproducibilidad evaluativa; el pipeline equivale al de documento
+P 43|normal      |    |Se descartó fine-tuning por la mutabilidad del corpus, chatbots genéricos por alucinación de montos y agentes 
+P 44|Heading 1   |    |2. Formulación de prompts (IE2)
+P 45|normal      |    |IntegraBot actúa como Copiloto de RRHH y Cumplimiento Laboral. El System Prompt (src/prompts.py) establece reg
+P 46|normal      |    |El prompt recibe inyección triple: {context} (fragmentos MMR), {question} y {chat_history} (últimas tres inter
+P 47|Heading 1   |    |3. Pipeline RAG dual (IE3)
+P 48|normal      |    |El flujo implementado es: consulta del colaborador en Streamlit → historial acotado (conversation.py) → retrie
+P 49|normal      |    |Tabla 3. Parámetros técnicos del pipeline RAG
+P 51|normal      |    |Ejemplos verificables del corpus: bono de colación $85.000 (Contrato Colectivo), 3 días administrativos pagado
+P 52|Heading 1   |    |4. Arquitectura de la solución (IE4)
+P 53|normal      |    |La solución se estructura en ocho módulos desacoplados bajo src/ más app.py. config.py centraliza el caso orga
+P 54|normal      |    |La Figura 1 representa el flujo arquitectónico completo: el colaborador interactúa vía Streamlit (app.py); el 
+P 56|normal      |    |Figura 1. Arquitectura RAG de IntegraBot (corpus dual, MMR k=4, Gemini y guardrails).
+P 57|Heading 1   |    |5. Pruebas, limitaciones y repositorio (IE5)
+P 58|normal      |    |Se implementó scripts/smoke_test.py con validación offline (corpus, metadata source_type, guardrails, historia
+P 59|normal      |    |Tabla 4. Casos de prueba representativos
+P 61|Heading 1   |    |Conclusión
+P 62|normal      |    |Tras el análisis e implementación, se deduce que IntegraBot responde de forma pertinente al caso organizaciona
+P 63|Heading 2   |    |Reflexión individual
+P 64|normal      |    |Diego Alejandro Madrid Muñoz: Durante este encargo comprendí en la práctica cómo un pipeline RAG no es solo co
+P 65|Heading 2   |    |Declaración de uso de inteligencia artificial
+P 66|normal      |    |Se empleó IA generativa (Cursor IDE, Google Gemini API) como apoyo en revisión de código, borrador de document
+P 67|Heading 1   |    |Bibliografía
+P 68|normal      |    |Chroma. (2026). ChromaDB documentation. https://docs.trychroma.com/
+P 69|normal      |    |Duoc UC. (2025). Uso de inteligencia artificial en el aprendizaje. https://bibliotecas.duoc.cl/ia
+P 70|normal      |    |Google. (2026). Gemini API documentation. https://ai.google.dev/
+P 71|normal      |    |LangChain. (2026). LangChain Python documentation. https://python.langchain.com/
+P 72|normal      |    |Streamlit. (2026). Streamlit documentation. https://docs.streamlit.io/
+TABLES: 12
+T0: Objetivo | Meta
+T1: Tipo | Documento | Contenido clave
+T2: Componente | Implementación | Justificación
+T3: Consulta | Resultado esperado
+T4: Objetivo | Meta
+T5: Tipo | Documento | Contenido clave
+T6: Componente | Implementación | Justificación
+T7: Consulta | Resultado esperado
+T8: Objetivo | Meta
+T9: Tipo | Documento | Contenido clave
+T10: Componente | Implementación | Justificación
+T11: Consulta | Resultado esperado
+HEADINGS: Counter({'Introducción': 1, '1. Análisis del caso organizacional (IE1)': 1, '1.1 Datos disponibles y restricciones': 1, '2. Formulación de prompts (IE2)': 1, '3. Pipeline RAG dual (IE3)': 1, '4. Arquitectura de la solución (IE4)': 1, '5. Pruebas, limitaciones y repositorio (IE5)': 1, 'Conclusión': 1, 'Reflexión individual': 1, 'Declaración de uso de inteligencia artificial': 1, 'Bibliografía': 1})

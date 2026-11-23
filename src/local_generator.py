@@ -82,6 +82,10 @@ def _best_block(context: str, question: str) -> tuple[str, str, str] | None:
         if not body:
             continue
         score = _score_block(question, body)
+        qnorm = _normalize(question)
+        fname = _normalize(filename)
+        if ("karin" in qnorm or "acoso" in qnorm) and "codigo_del_trabajo" in fname:
+            score += 4
         if best is None or score > best[0]:
             best = (score, filename, body, match.group("page"))
     if best is None or best[0] <= 0:

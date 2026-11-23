@@ -1,0 +1,142 @@
+{
+  "metrics": {
+    "n": 34,
+    "n_labeled": 34,
+    "precision": 1.0,
+    "precision_by_expect": {
+      "cita": {
+        "n": 8,
+        "ok": 8,
+        "rate": 1.0
+      },
+      "cita_interna": {
+        "n": 16,
+        "ok": 16,
+        "rate": 1.0
+      },
+      "derivacion": {
+        "n": 6,
+        "ok": 6,
+        "rate": 1.0
+      },
+      "ticket": {
+        "n": 4,
+        "ok": 4,
+        "rate": 1.0
+      }
+    },
+    "error_rate": 0.0,
+    "error_count": 0,
+    "slo_ms": 5000.0,
+    "slo_breach_count": 1,
+    "slo_compliance": 0.9706,
+    "latency_ms": {
+      "mean": 581.4,
+      "p50": 70.2,
+      "p95": 193.4,
+      "max": 17233.3
+    },
+    "cpu_ms": {
+      "mean": 513.8,
+      "p95": 557.8
+    },
+    "peak_kb": {
+      "mean": 3496.9,
+      "max": 113327.1
+    },
+    "consistency": 0.9839,
+    "consistency_by_intent": [
+      {
+        "intent": "aguinaldo",
+        "n": 2,
+        "jaccard": 1.0,
+        "monto_estable": true
+      },
+      {
+        "intent": "clima",
+        "n": 4,
+        "jaccard": 1.0,
+        "monto_estable": true
+      },
+      {
+        "intent": "colacion",
+        "n": 4,
+        "jaccard": 1.0,
+        "monto_estable": true
+      },
+      {
+        "intent": "dias_admin",
+        "n": 4,
+        "jaccard": 1.0,
+        "monto_estable": true
+      },
+      {
+        "intent": "escolaridad",
+        "n": 4,
+        "jaccard": 1.0,
+        "monto_estable": true
+      },
+      {
+        "intent": "fuera_dominio",
+        "n": 2,
+        "jaccard": 1.0,
+        "monto_estable": true
+      },
+      {
+        "intent": "horas_extra",
+        "n": 4,
+        "jaccard": 1.0,
+        "monto_estable": true
+      },
+      {
+        "intent": "karin",
+        "n": 4,
+        "jaccard": 0.839,
+        "monto_estable": true
+      },
+      {
+        "intent": "privacidad",
+        "n": 2,
+        "jaccard": 1.0,
+        "monto_estable": true
+      },
+      {
+        "intent": "sensible",
+        "n": 4,
+        "jaccard": 1.0,
+        "monto_estable": true
+      }
+    ],
+    "amount_conflicts": 0,
+    "latency_by_kind": {
+      "caso_sensible": 140.0,
+      "consulta_documentada": 800.1,
+      "fuera_de_dominio": 0.8
+    }
+  },
+  "findings": [
+    "El primer turno (17233 ms) es el cuello de botella: carga del índice y del modelo de embeddings. La media del resto es 77 ms.",
+    "1 de 34 turnos superan el SLO de 5000 ms o terminan en error (p95 = 193.4 ms).",
+    "Precisión en escenarios etiquetados: 100% (34 turnos).",
+    "Consistencia entre repeticiones y paráfrasis: Jaccard 98%.",
+    "Frecuencia de errores en la batería: 0 %.",
+    "Memoria Python del turno (pico tracemalloc): media 3496.9 KB, máximo 113327.1 KB. CPU media 513.8 ms."
+  ],
+  "recommendations": [
+    {
+      "titulo": "Separar el arranque en frío del SLO de respuesta",
+      "detalle": "Precargar Chroma y el modelo de embeddings al iniciar Streamlit, y medir el SLO de 5 s solo en turnos tibios. El arranque no debe contarse como una consulta de colaborador.",
+      "evidencia": "Latencia del primer evento frente a la media de los siguientes."
+    },
+    {
+      "titulo": "Conservar el registro local y sin datos personales",
+      "detalle": "El JSONL vive en el servidor de la app, con RUT y correo redactados y la sesión hasheada. No se reenvía el texto completo a un tercero de observabilidad.",
+      "evidencia": "redact() y session_ref() en src/observability.py."
+    },
+    {
+      "titulo": "Escalar por tipo de tarea, no por un solo promedio",
+      "detalle": "Un promedio esconde que un caso sensible abre ticket y consulta dos corpus. El dashboard separa latencia por task_kind para decidir caché, no para recortar guardrails.",
+      "evidencia": "latency_by_kind."
+    }
+  ]
+}

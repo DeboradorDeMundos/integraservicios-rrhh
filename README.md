@@ -8,7 +8,7 @@ Sistema de **Retrieval-Augmented Generation (RAG)** para **IntegraServicios S.A.
 | **GitHub** | [DeboradorDeMundos](https://github.com/DeboradorDeMundos) |
 | **Repositorio** | [integraservicios-rrhh](https://github.com/DeboradorDeMundos/integraservicios-rrhh) |
 | **Asignatura** | INGENIERIA DE SOLUCIONES CON INTELIGENCIA ARTIFICIAL_011V_OLS |
-| **Proyecto** | EP1 RAG + **EP2 Agente funcional** · RRHH y cumplimiento laboral |
+| **Proyecto** | EP1 RAG + EP2 agente + **EP3 observabilidad** · RRHH y cumplimiento laboral |
 
 ---
 
@@ -59,7 +59,8 @@ integraservicios-rrhh/
 ├── data/                         # Corpus dual (interno + externo)
 ├── scripts/
 │   ├── smoke_test.py             # Validación EP1 (IE1–IE4)
-│   └── agent_scenarios_test.py   # Escenarios EP2 (plan, memoria, agente)
+│   ├── agent_scenarios_test.py   # Escenarios EP2 (plan, memoria, agente)
+│   └── observability_eval.py     # Batería EP3 (precisión, latencia, consistencia)
 ├── src/
 │   ├── __init__.py
 │   ├── config.py                 # Caso org. + parámetros RAG/agente
@@ -75,8 +76,11 @@ integraservicios-rrhh/
 │   ├── prompts.py                # Prompt RAG + anti-alucinación
 │   ├── guardrails.py             # Validación post-respuesta
 │   ├── rag_engine.py             # Pipeline RAG (usado por tools)
-│   └── errors.py                 # Mensajes de error para el usuario
+│   ├── errors.py                 # Mensajes de error para el usuario
+│   └── observability.py          # Trazas, métricas y privacidad (EP3)
 ├── app.py                        # Chat + trazabilidad agente/plan/fuentes
+├── dashboard.py                  # Dashboard de observabilidad (EP3)
+├── observability/                # JSONL de turnos + resumen de métricas
 ├── generate_data.py
 ├── requirements.txt
 ├── .env.example
@@ -120,6 +124,37 @@ python scripts/agent_scenarios_test.py --live
 ```
 
 Guía de informe (5 páginas): ver `INFORME_EVA2.md` en el repo local (plantilla de contenido).
+
+---
+
+## 3.1 Observabilidad EP3 (ISY0101)
+
+Sobre el mismo agente se miden cinco señales y se muestran en un dashboard.
+
+| Métrica | Qué observa | Dónde |
+| --- | --- | --- |
+| Precisión | La conducta esperada: cita, derivación o ticket | `src/observability.py` |
+| Consistencia | Jaccard entre paráfrasis de la misma intención | `consistency_by_intent` |
+| Errores | Excepciones por turno | campo `error` del JSONL |
+| Latencia | P50, P95 y SLO de 5 s, aparte del arranque en frío | `latency_ms` |
+| Recursos | CPU del turno y pico de memoria Python | `cpu_ms`, `peak_kb` |
+
+El registro redacta RUT y correo, y guarda la sesión como hash. No se envía a un servicio externo.
+
+```bash
+python scripts/observability_eval.py
+streamlit run dashboard.py
+```
+
+Informe y presentación: `INFORME_EVA3.md`, `eva3/Informe_EP3_ISY0101_Diego_Madrid.docx`, `presentacion_ep3.html`.
+
+```mermaid
+flowchart LR
+    U[Chat] --> R[run_agent]
+    R --> J[observability/ep3_eval.jsonl]
+    J --> M[Métricas]
+    M --> D[dashboard.py]
+```
 
 ---
 

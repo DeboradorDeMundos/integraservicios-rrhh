@@ -1,0 +1,27 @@
+{
+  "name": "inteligencia_artificial",
+  "version": "1.0.0",
+  "description": "Sistema de **Retrieval-Augmented Generation (RAG)** para **IntegraServicios S.A.** El asistente **IntegraBot** responde consultas de colaboradores sobre el Reglamento Interno (RIOHS), el Contrato Colectivo y extractos del Código del Trabajo / Ley Karin, **citando la fuente** y **sin inventar** montos, plazos ni artículos.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DeboradorDeMundos/integraservicios-rrhh.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DeboradorDeMundos/integraservicios-rrhh/issues"
+  },
+  "homepage": "https://github.com/DeboradorDeMundos/integraservicios-rrhh#readme",
+  "dependencies": {
+    "playwright": "^1.65.0"
+  }
+}
