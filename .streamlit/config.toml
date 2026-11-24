@@ -15,6 +15,6 @@ gatherUsageStats = false
 
 [server]
 # Evita el bucle de recarga: ChromaDB escribe archivos y Streamlit los interpreta como cambio de código.
-folderWatchBlacklist = ["chroma_db", "venv", ".git"]
-fileWatcherType = "poll"
+folderWatchBlacklist = ["chroma_db", "chroma_db_local", "chroma_db_v2", "venv", ".git", "observability"]
+fileWatcherType = "none"
 

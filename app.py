@@ -15,15 +15,16 @@ import os
 import re
 import uuid
 
-import streamlit as st
 from dotenv import load_dotenv
+
+load_dotenv()
+
+import streamlit as st
 
 from src.agent import initialize_agent, run_agent
 from src.config import CORPUS_LABELS, SourceType
 from src.errors import classify_exception
 from src.models import provider_label
-
-load_dotenv()
 logging.basicConfig(level=logging.ERROR, format="%(asctime)s [%(name)s] %(message)s")
 
 st.set_page_config(

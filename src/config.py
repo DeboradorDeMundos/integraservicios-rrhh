@@ -12,6 +12,12 @@ import os
 from dataclasses import dataclass
 from enum import Enum
 
+from dotenv import load_dotenv
+
+# Antes de leer MODEL_PROVIDER. Si no, Streamlit importa este módulo
+# con el default "google" y consulta el índice de 3072 dims con MiniLM (384).
+load_dotenv()
+
 
 class SourceType(str, Enum):
     """Clasificación del corpus RAG (IE3: fuentes internas y externas)."""

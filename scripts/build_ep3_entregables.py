@@ -537,8 +537,8 @@ def main() -> None:
     after = load(SUMMARY)
     before = load(BEFORE)
     build_md(after, before)
-    build_docx(after, before)
-    build_html(after, before)
+    print("Word: python scripts/fill_informe_ep3_docx.py")
+    print("Presentación: python scripts/build_presentacion_ep3.py")
 
 
 if __name__ == "__main__":
